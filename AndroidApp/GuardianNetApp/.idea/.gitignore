@@ -1,0 +1,49 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Gradle
+.gradle/
+build/
+*/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration file (contains SDK paths, etc.)
+local.properties
+
+# Android Studio
+.idea/
+*.iml
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Keystore files (security risk!)
+*.jks
+*.keystore
+
+# Log & crash reports
+*.log
+captures/
+
+# NDK / CMake
+.cxx/
+.externalNativeBuild/
+
+# Kotlin build cache
+*.kotlin_module
+
+# Google Services / Firebase (should not be committed for security reasons)
+google-services.json
+firebase-debug.log
+
+# IntelliJ
+out/
+
+# Coverage
+*.ec
+coverage/
+
+# VSCode (if ever used)
+.vscode/
+
