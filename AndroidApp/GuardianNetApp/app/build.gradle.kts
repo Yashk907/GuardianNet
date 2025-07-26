@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -57,7 +58,7 @@ dependencies {
     // ✅ ViewModel + Hilt (DI)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
     implementation("androidx.hilt:hilt-navigation-compose")
-    implementation("com.google.dagger:hilt-android:2.48")
+    implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-compiler:2.51.1")
 
     // ✅ Retrofit for Networking
@@ -66,13 +67,13 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
 
     // ✅ Jetpack Navigation Compose
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.navigation:navigation-compose:2.9.2")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
 
     // ✅ Optional Tools
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

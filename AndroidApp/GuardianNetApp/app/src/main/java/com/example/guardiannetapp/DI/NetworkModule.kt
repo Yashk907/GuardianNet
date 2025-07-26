@@ -1,6 +1,7 @@
 package com.example.guardiannetapp.DI
 
 import com.example.guardiannetapp.API.AuthApi
+import com.example.guardiannetapp.Repo.AuthRepo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,11 +17,20 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAuthApi() : AuthApi{
+    fun provideRetrofit() : Retrofit{
         return Retrofit.Builder()
-            .baseUrl("")
+            .baseUrl("http://192.168.82.9:8000")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create()
     }
+
+    @Provides
+    @Singleton
+    fun provideAuthApi(retrofit: Retrofit): AuthApi =
+        retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(api: AuthApi): AuthRepo =
+        AuthRepo(api)
 }

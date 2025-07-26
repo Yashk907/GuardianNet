@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.example.guardiannetapp.Navigation.Navigation
 import com.example.guardiannetapp.ui.theme.GuardianNetAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,7 +24,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             GuardianNetAppTheme {
-
+                val navHostController = rememberNavController()
+                Navigation(navHostController)
             }
         }
     }
