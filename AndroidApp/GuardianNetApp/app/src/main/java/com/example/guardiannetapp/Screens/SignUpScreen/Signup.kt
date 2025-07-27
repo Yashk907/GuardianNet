@@ -73,6 +73,7 @@ fun SignUpScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
 
     val signUpState by viewModel.signupState.collectAsState()
 
@@ -166,6 +167,13 @@ fun SignUpScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+            //address Field
+            InputField(
+                label = "Address",
+                value = address,
+                onValueChange = { address = it },
+                keyboardType = KeyboardType.Text
+            )
 
             // Password Field
             InputField(
@@ -221,7 +229,8 @@ fun SignUpScreen(
                                 email = email,
                                 phone = phoneNumber,
                                 password = password,
-                                role = Role
+                                role = Role,
+                                address = address
                             )
                         }
                     }
@@ -342,6 +351,7 @@ fun PhoneInputField(
         }
     }
 }
+
 
 fun isValidEmail(email: String): Boolean {
     return Patterns.EMAIL_ADDRESS.matcher(email).matches()

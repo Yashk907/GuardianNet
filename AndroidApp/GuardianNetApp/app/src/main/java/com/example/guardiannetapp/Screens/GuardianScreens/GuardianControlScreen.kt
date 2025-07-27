@@ -22,6 +22,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.example.guardiannetapp.Navigation.Screen
 import com.example.guardiannetapp.R
 import com.example.guardiannetapp.ui.theme.Poppins
 
@@ -39,7 +41,8 @@ data class GuardianBottomNavItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GuardiansideControlScreen(
-    userId : String
+    userId : String,
+    navController: NavController,
 ) {
     val selectTab = rememberSaveable { mutableStateOf("home") }
     val notificationCount = rememberSaveable { mutableStateOf(0) }
@@ -72,7 +75,10 @@ fun GuardiansideControlScreen(
 
             // Show screen based on selected route
             when (selectTab.value) {
-                "home" -> GuardianHomeScreen(userId,hiltViewModel())
+                "home" -> GuardianHomeScreen(userId,hiltViewModel(),
+                    onPatientClick = {
+                        navController.navigate("${Screen.PATIENTDETAILSCREEN.name}/${it.id}")
+                    })
                 "add_patient" -> {
                     Text("Add Patient Screen", modifier = Modifier.align(Alignment.Center))
                 }

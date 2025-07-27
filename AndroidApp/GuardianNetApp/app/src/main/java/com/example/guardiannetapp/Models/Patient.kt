@@ -21,6 +21,7 @@ data class Patient(
 
     val status: String = "Safe", // Safe, Breached, Emergency
 
+    val address : String ="",
     val createdAt: String? = null,
     val updatedAt: String? = null
 )

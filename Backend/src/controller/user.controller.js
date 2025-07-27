@@ -13,7 +13,7 @@ const registerUser = asyncHandler(async(req,res)=>{
     //check if user already exists
     //check users role and as per role create dbs
 
-    const {name, email, password, phone, role} = req.body;
+    const {name, email, password, phone, role , address} = req.body;
 
      if([name,email,password,phone,role].some((field)=> field.trim()==="")){
         throw new ApiError(400,"All fields are required");
@@ -50,6 +50,7 @@ const registerUser = asyncHandler(async(req,res)=>{
         const guardian = await Guardian.create({
             userId : user._id,
             userName : user.name,
+            address : address,
             patients: []
         });
     }else{
@@ -65,7 +66,8 @@ const registerUser = asyncHandler(async(req,res)=>{
             linkCode : await uniqueLinkCode(),
             guardians: [],
             safeZoneRadius: 1000, // Default radius in meters
-            status: "Safe"
+            status: "Safe",
+            address : address
         })
     }
 

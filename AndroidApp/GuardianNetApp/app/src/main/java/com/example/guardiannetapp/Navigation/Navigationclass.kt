@@ -47,8 +47,15 @@ fun Navigation(navHostController: NavHostController,
         composable (route = "${Screen.GUARDIANCONTROLSCREEN.name}/{userId}"){
             backstackEntry->
             val userId = backstackEntry.arguments?.getString("userId")
-            GuardiansideControlScreen(userId.toString())
+            GuardiansideControlScreen(userId.toString(),navHostController)
         }
+
+        composable(route = "${Screen.PATIENTDETAILSCREEN.name}/{patientId}") {
+            backstackEntry ->
+            val patientId = backstackEntry.arguments?.getString("patientId")
+            //patientDetail Screen
+            //implement later
+    }
 
         //patient
         composable (route = Screen.PATIENTCONTROLSCREEN.name){
@@ -69,6 +76,7 @@ enum class Screen{
 
     //Gurdian
     GUARDIANCONTROLSCREEN,
+    PATIENTDETAILSCREEN,
 
     //patients
     PATIENTCONTROLSCREEN,

@@ -23,9 +23,9 @@ class AuthViewModel @Inject constructor(private  val repo : Repo):
         private val _signInState = MutableStateFlow<Result<ApiResponse<AuthData>>?>(null)
         val signinState = _signInState
 
-    fun signUp(name: String, email: String, phone: String, password: String, role: String) {
+    fun signUp(name: String, email: String, phone: String, password: String, role: String,address : String) {
         viewModelScope.launch {
-            val request = SignUpRequest(name, email, phone, password, role)
+            val request = SignUpRequest(name, email, phone, password, role,address)
             Log.d("AuthLog",request.toString())
             val state = repo.signUp(request)
             _signUpState.value = state

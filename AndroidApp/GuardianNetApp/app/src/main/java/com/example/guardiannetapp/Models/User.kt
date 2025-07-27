@@ -1,6 +1,7 @@
 package com.example.guardiannetapp.Models
 
 import kotlinx.serialization.Serializable
+import okhttp3.Address
 
 @Serializable
 data class User(

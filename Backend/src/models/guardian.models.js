@@ -26,6 +26,10 @@ const guardianSchema = new mongoose.Schema(
         }
       
     ],
+    address : {
+      type : String,
+      required : true
+    }
     
   },
   {

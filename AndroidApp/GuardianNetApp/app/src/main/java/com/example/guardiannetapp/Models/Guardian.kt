@@ -12,6 +12,7 @@ data class Guardian(
 
     val userId: String = "", // References User._id
     val patients: List<GuardianPatient> = emptyList(), // Patients array
+    val address : String ="",
 
     val createdAt: String? = null, // timestamps
     val updatedAt: String? = null

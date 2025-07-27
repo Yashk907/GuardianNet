@@ -47,6 +47,11 @@ const patientSchema = new mongoose.Schema({
         enum : ["Safe", "Breached", "Emergency"],
         default : "Safe"
     }
+    ,
+    address : {
+        type : String ,
+        required : String
+    }
 
 },{timestamps: true});
 
