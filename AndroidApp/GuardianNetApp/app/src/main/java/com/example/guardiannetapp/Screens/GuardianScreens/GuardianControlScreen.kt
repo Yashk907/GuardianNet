@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.guardiannetapp.R
 import com.example.guardiannetapp.ui.theme.Poppins
 
@@ -38,6 +39,7 @@ data class GuardianBottomNavItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GuardiansideControlScreen(
+    userId : String
 ) {
     val selectTab = rememberSaveable { mutableStateOf("home") }
     val notificationCount = rememberSaveable { mutableStateOf(0) }
@@ -66,39 +68,11 @@ fun GuardiansideControlScreen(
                 .padding(paddingValues)
         ) {
             // Sample Data
-            val sampleUser = User(
-                id = "1",
-                name = "Vinod Krishna",
-                email = "vinod@example.com",
-                phone = "1234567890",
-                role = "Patient"
-            )
 
-            val samplePatient = PatientData(
-                id = "1",
-                userId = "1",
-                user = sampleUser,
-                safeZoneCenter = LatLng(28.6139, 77.2090),
-                safeZoneRadius = 1000,
-                guardians = listOf(
-                    GuardianReference("guardian1", true),
-                    GuardianReference("guardian2", false)
-                ),
-                linkCode = "ABC123",
-                status = PatientStatus.BREACHED,
-                createdAt = "2024-01-15T10:30:00.000Z",
-                updatedAt = "2024-01-15T10:35:00.000Z",
-                approximateAddress = "Sainagar, Pune, Maharashtra"
-            )
-
-            val sampleUiState = HomeScreenUiState(
-                myPatients = listOf(samplePatient),
-                nearbyRequests = listOf(samplePatient.copy(id = "2"))
-            )
 
             // Show screen based on selected route
             when (selectTab.value) {
-                "home" -> GuardianHomeScreen(uiState = sampleUiState)
+                "home" -> GuardianHomeScreen(userId,hiltViewModel())
                 "add_patient" -> {
                     Text("Add Patient Screen", modifier = Modifier.align(Alignment.Center))
                 }
@@ -251,14 +225,14 @@ fun GuardianBottomNavigation(
         }
     }
 }
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ControlScreenPreview() {
-    var selectedTab by remember { mutableStateOf("home") }
-
-    MaterialTheme {
-        GuardiansideControlScreen(
-        )
-    }
-}
+//
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun ControlScreenPreview() {
+//    var selectedTab by remember { mutableStateOf("home") }
+//
+//    MaterialTheme {
+//        GuardiansideControlScreen(
+//        )
+//    }
+//}

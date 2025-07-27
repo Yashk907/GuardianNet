@@ -49,6 +49,7 @@ const registerUser = asyncHandler(async(req,res)=>{
         // This could involve creating a patient record or linking to an existing one
         const guardian = await Guardian.create({
             userId : user._id,
+            userName : user.name,
             patients: []
         });
     }else{
@@ -56,6 +57,7 @@ const registerUser = asyncHandler(async(req,res)=>{
         // This could involve creating a patient record or linking to an existing one
         const patient = await Patient.create({
             userId : user._id,
+            userName : user.name,
             safeZoneCenter :{
                 type: "Point",
                 coordinates: [0, 0] // Default coordinates, can be updated later

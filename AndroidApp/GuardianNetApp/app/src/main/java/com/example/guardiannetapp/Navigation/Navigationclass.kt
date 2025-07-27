@@ -44,8 +44,10 @@ fun Navigation(navHostController: NavHostController,
         }
 
         //guardian
-        composable (route = Screen.GUARDIANCONTROLSCREEN.name){
-            GuardiansideControlScreen()
+        composable (route = "${Screen.GUARDIANCONTROLSCREEN.name}/{userId}"){
+            backstackEntry->
+            val userId = backstackEntry.arguments?.getString("userId")
+            GuardiansideControlScreen(userId.toString())
         }
 
         //patient

@@ -1,14 +1,13 @@
 package com.example.guardiannetapp.DI
 
 import com.example.guardiannetapp.API.AuthApi
-import com.example.guardiannetapp.Repo.AuthRepo
+import com.example.guardiannetapp.Repo.Repo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 import javax.inject.Singleton
 
 @Module
@@ -31,6 +30,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(api: AuthApi): AuthRepo =
-        AuthRepo(api)
+    fun provideAuthRepository(api: AuthApi): Repo =
+        Repo(api)
 }

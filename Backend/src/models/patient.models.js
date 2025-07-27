@@ -5,6 +5,10 @@ const patientSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : "User"
     },
+    userName : {
+        type : String,
+        required : true
+    },
     safeZoneCenter : {
         type : {
             type :String,
@@ -24,7 +28,7 @@ const patientSchema = new mongoose.Schema({
         {
             guardian : {
                  type : mongoose.Schema.Types.ObjectId,
-            ref : "Guardian",
+                 ref : "Guardian",
             },
             isPrimary : {
                 type : Boolean,

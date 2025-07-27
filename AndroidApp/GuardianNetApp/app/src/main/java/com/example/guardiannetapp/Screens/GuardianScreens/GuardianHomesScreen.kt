@@ -1,5 +1,7 @@
 package com.example.guardiannetapp.Screens.GuardianScreens
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,73 +15,51 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.guardiannetapp.Models.GuardianPatient
+import com.example.guardiannetapp.Models.Patient
+import com.example.guardiannetapp.Viewmodels.GurdianViewmodels.GuardianHomeScreenVM
 
-// Data Models
-data class User(
-    val id: String,
-    val name: String,
-    val email: String,
-    val phone: String,
-    val role: String // Guardian/Patient
-)
+//enum class PatientStatus(val displayName: String, val color: Color) {
+//    SAFE("Safe", Color(0xFF4CAF50)),
+//    BREACHED("Breached", Color(0xFFFF9800)),
+//    EMERGENCY("Emergency", Color(0xFFF44336))
+//}
 
-data class PatientData(
-    val id: String,
-    val userId: String,
-    val user: User? = null,
-    val safeZoneCenter: LatLng,
-    val safeZoneRadius: Int,
-    val guardians: List<GuardianReference>,
-    val linkCode: String,
-    val status: PatientStatus,
-    val createdAt: String,
-    val updatedAt: String,
-    val approximateAddress: String? = null
-)
 
-data class GuardianReference(
-    val guardian: String,
-    val isPrimary: Boolean
-)
-
-data class LatLng(
-    val latitude: Double,
-    val longitude: Double
-)
-
-enum class PatientStatus(val displayName: String, val color: Color) {
-    SAFE("Safe", Color(0xFF4CAF50)),
-    BREACHED("Breached", Color(0xFFFF9800)),
-    EMERGENCY("Emergency", Color(0xFFF44336))
-}
-
-// UI State
-data class HomeScreenUiState(
-    val isLoading: Boolean = false,
-    val myPatients: List<PatientData> = emptyList(),
-    val nearbyRequests: List<PatientData> = emptyList(),
-    val error: String? = null
-)
 
 @Composable
 fun GuardianHomeScreen(
-    uiState: HomeScreenUiState = HomeScreenUiState(),
-    onPatientClick: (PatientData) -> Unit = {},
+    userId : String,
+    viewModel : GuardianHomeScreenVM,
+    onPatientClick: (Patient) -> Unit = {},
     onAddPatientClick: () -> Unit = {}
 ) {
+    val isLoading = viewModel.isLoading.collectAsState()
+    val guardian = viewModel.guardian.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        Log.d("userId",userId)
+        viewModel.fetchGuardian (userId){
+            Toast.makeText(context,it, Toast.LENGTH_SHORT).show()
+        }
+    }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF5F5F7)
     ) {
-        if (uiState.isLoading) {
+        if (isLoading.value) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -96,27 +76,27 @@ fun GuardianHomeScreen(
                 item { Spacer(modifier = Modifier.height(8.dp)) }
 
                 // My Patients Section
-                if (uiState.myPatients.isNotEmpty()) {
-                    item { SectionHeader("My Patients (${uiState.myPatients.size})") }
-                    items(uiState.myPatients) { patient ->
-                        CompactPatientCard(patient = patient, onClick = { onPatientClick(patient) })
+                if (guardian.value.patients.isNotEmpty()) {
+                    item { SectionHeader("My Patients (${guardian.value.patients.size})") }
+                    items(guardian.value.patients) { patient ->
+                        CompactPatientCard(patient = patient.patient, onClick = { onPatientClick(patient.patient) })
                     }
                 }
 
                 // Nearby Help Requests Section
-                if (uiState.nearbyRequests.isNotEmpty()) {
-                    item { SectionHeader("Nearby Help Requests (${uiState.nearbyRequests.size})") }
-                    items(uiState.nearbyRequests) { patient ->
-                        CompactPatientCard(
-                            patient = patient,
-                            onClick = { onPatientClick(patient) },
-                            isNearbyRequest = true
-                        )
-                    }
-                }
+//                if (uiState.nearbyRequests.isNotEmpty()) {
+//                    item { SectionHeader("Nearby Help Requests (${uiState.nearbyRequests.size})") }
+//                    items(uiState.nearbyRequests) { patient ->
+//                        CompactPatientCard(
+//                            patient = patient,
+//                            onClick = { onPatientClick(patient) },
+//                            isNearbyRequest = true
+//                        )
+//                    }
+//                }
 
                 // Empty State
-                if (uiState.myPatients.isEmpty() && uiState.nearbyRequests.isEmpty()) {
+                if (guardian.value.patients.isEmpty() ) {
                     item { EmptyState(onAddPatientClick) }
                 }
 
@@ -128,7 +108,7 @@ fun GuardianHomeScreen(
 
 @Composable
 fun CompactPatientCard(
-    patient: PatientData,
+    patient: Patient,
     onClick: () -> Unit,
     isNearbyRequest: Boolean = false
 ) {
@@ -167,7 +147,7 @@ fun CompactPatientCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = patient.user?.name ?: "Unknown Patient",
+                        text = patient.userName ?: "Unknown Patient",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF2C2C2C),
@@ -217,17 +197,24 @@ fun CompactPatientCard(
 }
 
 @Composable
-fun StatusBadge(status: PatientStatus) {
+fun StatusBadge(status: String) {
+
+    val color = when (status) {
+        "Safe" -> Color(0xFF4CAF50)
+        "Breached" -> Color(0xFFFF9800)
+        "Emergency" -> Color(0xFFF44336)
+        else -> Color.Gray
+    }
     Box(
         modifier = Modifier
-            .background(status.color.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+            .background(color.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
-            text = status.displayName.uppercase(),
+            text = status.uppercase(),
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
-            color = status.color
+            color = color
         )
     }
 }
@@ -288,6 +275,6 @@ fun EmptyState(onAddPatientClick: () -> Unit) {
 }
 
 // Utility
-private fun isPrimaryGuardian(patient: PatientData): Boolean {
+private fun isPrimaryGuardian(patient: Patient): Boolean {
     return patient.guardians.any { it.isPrimary }
 }

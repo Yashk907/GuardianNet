@@ -118,6 +118,28 @@ const setSafeLocation = asyncHandler(async (req, res) => {
   );
 });
 
+const getGuardian = asyncHandler(async(req,res)=>{
+  const {userId} = req.body
+
+  if(!userId){
+    throw new ApiError(400,"Send UserId")
+  }
+  const guardian = await Guardian.findOne(
+    {userId}
+  )
+
+  if(!guardian){
+    throw new ApiError(400,"guardian does not exist")
+  }
+
+  return res.status(200).json(
+    new ApiResponse("Guardian Fetched successfully",
+      guardian
+    )
+  )
+})
+
 
 export {connectToPatient}
 export {setSafeLocation}
+export {getGuardian}

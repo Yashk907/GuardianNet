@@ -85,7 +85,7 @@ fun SignUpScreen(
                 isLoading = false
                val role = response.data.user.role
                 when(role){
-                    "Guardian" -> navController.navigate(Screen.GUARDIANCONTROLSCREEN.name){
+                    "Guardian" -> navController.navigate("${Screen.GUARDIANCONTROLSCREEN.name}/${response.data.user._id}"){
                         popUpTo(0) { inclusive = true }
                         launchSingleTop = true
                     }

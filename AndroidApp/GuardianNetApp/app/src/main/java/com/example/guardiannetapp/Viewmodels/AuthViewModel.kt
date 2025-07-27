@@ -7,14 +7,14 @@ import com.example.guardiannetapp.Models.Response.ApiResponse
 import com.example.guardiannetapp.Models.Response.AuthData
 import com.example.guardiannetapp.Models.SignInRequest
 import com.example.guardiannetapp.Models.SignUpRequest
-import com.example.guardiannetapp.Repo.AuthRepo
+import com.example.guardiannetapp.Repo.Repo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthViewModel @Inject constructor(private  val repo : AuthRepo):
+class AuthViewModel @Inject constructor(private  val repo : Repo):
     ViewModel() {
 
         private val _signUpState = MutableStateFlow<Result<ApiResponse<AuthData>>?>(null)
