@@ -7,9 +7,7 @@ const guardianSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    linkCode: {
-      type: String,
-    },
+    
     patients: [
         {
             patient : {
@@ -17,10 +15,9 @@ const guardianSchema = new mongoose.Schema(
                 ref : "Patient",
                 required: true
             },
-            level : {
-                type : String,
-                enum : ["Primary", "Secondary"],
-                default : "Primary"
+            isPrimary : {
+              type : Boolean,
+              default : false
             }
         }
       

@@ -4,6 +4,7 @@ import {ApiResponse} from "../utils/ApiResponse.js";
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {Patient} from "../models/patient.models.js";
 import {Guardian} from "../models/guardian.models.js";
+import { uniqueLinkCode } from "./patient.controller.js";
 
 
 const registerUser = asyncHandler(async(req,res)=>{
@@ -48,7 +49,6 @@ const registerUser = asyncHandler(async(req,res)=>{
         // This could involve creating a patient record or linking to an existing one
         const guardian = await Guardian.create({
             userId : user._id,
-            linkCode : Math.random().toString(36).substring(2, 15),
             patients: []
         });
     }else{
@@ -60,6 +60,7 @@ const registerUser = asyncHandler(async(req,res)=>{
                 type: "Point",
                 coordinates: [0, 0] // Default coordinates, can be updated later
             },
+            linkCode : await uniqueLinkCode(),
             guardians: [],
             safeZoneRadius: 1000, // Default radius in meters
             status: "Safe"
@@ -106,6 +107,9 @@ const loginUser = asyncHandler(async(req,res)=>{
         new ApiResponse("User logged in successfully", {user, token})
     )
 })
+
+
+
 
 export {loginUser};
 export {registerUser};

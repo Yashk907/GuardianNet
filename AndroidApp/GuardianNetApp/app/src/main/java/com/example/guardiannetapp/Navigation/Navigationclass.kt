@@ -8,6 +8,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.guardiannet.Login.SignInScreen
+import com.example.guardiannetapp.Screens.GuardianScreens.GuardiansideControlScreen
 import com.example.guardiannetapp.Screens.SignUpScreen.RegistrationScreen
 import com.example.guardiannetapp.Screens.SignUpScreen.SignUpScreen
 import com.example.guardiannetapp.Viewmodels.AuthViewModel
@@ -35,11 +36,21 @@ fun Navigation(navHostController: NavHostController,
         composable(route = "${Screen.SIGNUP.name}/{RegisterRole}") {
             backstackEntry->
             val role = backstackEntry.arguments?.getString("RegisterRole")?:"Patient"
-            SignUpScreen(role,hiltViewModel())
+            SignUpScreen(navHostController,role,hiltViewModel())
         }
 
         composable(route = Screen.SIGNIN.name) {
             SignInScreen(hiltViewModel(), onSignUpClick = {navHostController.navigate(Screen.REGISTERROLESCREEN.name)})
+        }
+
+        //guardian
+        composable (route = Screen.GUARDIANCONTROLSCREEN.name){
+            GuardiansideControlScreen()
+        }
+
+        //patient
+        composable (route = Screen.PATIENTCONTROLSCREEN.name){
+
         }
 
     }
@@ -52,5 +63,11 @@ enum class Screen{
 
     //loginscreens
     SIGNIN,
-    SPLASHSCREEN
+    SPLASHSCREEN,
+
+    //Gurdian
+    GUARDIANCONTROLSCREEN,
+
+    //patients
+    PATIENTCONTROLSCREEN,
 }

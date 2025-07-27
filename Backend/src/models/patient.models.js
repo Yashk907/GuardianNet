@@ -26,13 +26,18 @@ const patientSchema = new mongoose.Schema({
                  type : mongoose.Schema.Types.ObjectId,
             ref : "Guardian",
             },
-            level : {
-                type : String,
-                enum : ["Primary", "Secondary"],
-                default : "Primary"
+            isPrimary : {
+                type : Boolean,
+                default : false
             }
         }
     ],
+    linkCode: {
+      type: String,
+    //   default : ""
+    },
+  
+
     status : {
         type : String,
         enum : ["Safe", "Breached", "Emergency"],
