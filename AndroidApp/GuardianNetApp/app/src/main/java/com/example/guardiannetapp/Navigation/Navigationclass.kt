@@ -8,6 +8,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.guardiannet.Login.SignInScreen
+import com.example.guardiannetapp.Screens.GuardianScreens.GuardianSidePatientDetailsScreen
 import com.example.guardiannetapp.Screens.GuardianScreens.GuardiansideControlScreen
 import com.example.guardiannetapp.Screens.SignUpScreen.RegistrationScreen
 import com.example.guardiannetapp.Screens.SignUpScreen.SignUpScreen
@@ -40,7 +41,7 @@ fun Navigation(navHostController: NavHostController,
         }
 
         composable(route = Screen.SIGNIN.name) {
-            SignInScreen(hiltViewModel(), onSignUpClick = {navHostController.navigate(Screen.REGISTERROLESCREEN.name)})
+            SignInScreen(hiltViewModel(), onSignUpClick = {navHostController.navigate(Screen.REGISTERROLESCREEN.name)}, navController = navHostController)
         }
 
         //guardian
@@ -53,8 +54,7 @@ fun Navigation(navHostController: NavHostController,
         composable(route = "${Screen.PATIENTDETAILSCREEN.name}/{patientId}") {
             backstackEntry ->
             val patientId = backstackEntry.arguments?.getString("patientId")
-            //patientDetail Screen
-            //implement later
+            GuardianSidePatientDetailsScreen(hiltViewModel(),patientId.toString())
     }
 
         //patient

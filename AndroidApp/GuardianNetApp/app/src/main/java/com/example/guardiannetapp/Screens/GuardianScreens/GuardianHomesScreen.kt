@@ -43,7 +43,8 @@ fun GuardianHomeScreen(
     userId : String,
     viewModel : GuardianHomeScreenVM,
     onPatientClick: (Patient) -> Unit = {},
-    onAddPatientClick: () -> Unit = {}
+    onAddPatientClick: () -> Unit = {},
+    modifier: Modifier= Modifier
 ) {
     val isLoading = viewModel.isLoading.collectAsState()
     val guardian = viewModel.guardian.collectAsState()
@@ -53,10 +54,11 @@ fun GuardianHomeScreen(
         Log.d("userId",userId)
         viewModel.fetchGuardian (userId){
             Toast.makeText(context,it, Toast.LENGTH_SHORT).show()
+            Log.d("guardian",it.toString())
         }
     }
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = Color(0xFFF5F5F7)
     ) {
         if (isLoading.value) {

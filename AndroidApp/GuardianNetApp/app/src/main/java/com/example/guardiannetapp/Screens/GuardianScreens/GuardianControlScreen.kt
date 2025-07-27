@@ -1,6 +1,7 @@
 package com.example.guardiannetapp.Screens.GuardianScreens
 
 
+import AddPatientScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -78,10 +79,9 @@ fun GuardiansideControlScreen(
                 "home" -> GuardianHomeScreen(userId,hiltViewModel(),
                     onPatientClick = {
                         navController.navigate("${Screen.PATIENTDETAILSCREEN.name}/${it.id}")
-                    })
-                "add_patient" -> {
-                    Text("Add Patient Screen", modifier = Modifier.align(Alignment.Center))
-                }
+                    },
+                    modifier = Modifier.padding(paddingValues))
+                "add_patient" -> AddPatientScreen(hiltViewModel(),userId, modifier = Modifier.padding(paddingValues))
                 "profile" -> {
                     Text("Profile Screen", modifier = Modifier.align(Alignment.Center))
                 }

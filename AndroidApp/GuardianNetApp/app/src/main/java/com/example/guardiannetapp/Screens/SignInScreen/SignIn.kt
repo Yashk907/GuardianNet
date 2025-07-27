@@ -48,6 +48,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.guardiannetapp.Navigation.Screen
 import com.example.guardiannetapp.R
 import com.example.guardiannetapp.Viewmodels.AuthViewModel
 import com.example.guardiannetapp.ui.theme.Poppins
@@ -62,7 +64,7 @@ fun SignInScreen(
     viewModel: AuthViewModel,
     onSignUpClick: () -> Unit,
     // viewModel: LoginViewModel = koinViewModel(),
-    // navController: NavController
+     navController: NavController
 ) {
     // val uiState by viewModel.uiState.collectAsState()
     var email by remember { mutableStateOf("") }
@@ -80,6 +82,17 @@ fun SignInScreen(
             result.onSuccess {
                 Toast.makeText(context, "signed In Successfully!", Toast.LENGTH_SHORT).show()
                 isLoading = false
+                val role = it.data.user.role
+                when(role){
+                    "Guardian" -> navController.navigate("${Screen.GUARDIANCONTROLSCREEN.name}/${it.data.user._id}"){
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                    "Patient" -> navController.navigate(Screen.PATIENTCONTROLSCREEN.name){
+                        popUpTo(0){inclusive =true}
+                        launchSingleTop = true
+                    }
+                }
             }
             result.onFailure { e ->
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

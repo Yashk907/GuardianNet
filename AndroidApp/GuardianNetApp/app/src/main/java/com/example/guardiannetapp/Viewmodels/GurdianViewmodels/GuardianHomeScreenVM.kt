@@ -1,5 +1,6 @@
 package com.example.guardiannetapp.Viewmodels.GurdianViewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.guardiannetapp.Models.Guardian
@@ -26,6 +27,7 @@ class GuardianHomeScreenVM @Inject constructor(private val authRepo: Repo) : Vie
                 isLoading.value = false
             }
             result.onFailure {
+                Log.d("error",it.message.toString())
                 onError(it.message.toString())
                 isLoading.value = false
             }

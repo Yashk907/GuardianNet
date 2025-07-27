@@ -1,6 +1,7 @@
 package com.example.guardiannetapp.API
 
 import com.example.guardiannetapp.Models.Guardian
+import com.example.guardiannetapp.Models.Patient
 import com.example.guardiannetapp.Models.Response.ApiResponse
 import com.example.guardiannetapp.Models.Response.AuthData
 import com.example.guardiannetapp.Models.SignInRequest
@@ -21,8 +22,22 @@ interface AuthApi {
     @POST("/api/v1/guardians/getGuardian")
     suspend fun fetchGuardian(@Body guardianRequest: GuardianRequest) : ApiResponse<Guardian>
 
+    @POST("api/v1/guardians/connectToPatient")
+    suspend fun connectToPatient(@Body connectionRequest: connectionRequest ) : ApiResponse<Guardian>
+
+    @POST("api/v1/patients/getPatientData")
+    suspend fun fetchPatient(@Body patientRequest: PatientRequest) : ApiResponse<Patient>
 }
 
 data class GuardianRequest(
     val userId: String
+)
+
+data class PatientRequest(
+    val userId: String
+)
+
+data class connectionRequest(
+    val userId : String,
+    val linkCode : String
 )

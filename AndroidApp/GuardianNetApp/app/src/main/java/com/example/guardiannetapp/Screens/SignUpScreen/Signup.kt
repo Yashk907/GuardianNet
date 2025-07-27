@@ -174,7 +174,7 @@ fun SignUpScreen(
                 onValueChange = { address = it },
                 keyboardType = KeyboardType.Text
             )
-
+            Spacer(modifier = Modifier.height(16.dp))
             // Password Field
             InputField(
                 label = "Password",
