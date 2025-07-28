@@ -17,7 +17,7 @@ class GuardianSidePatientDetailsVM @Inject constructor(private val repo: Repo) :
 
     val isLoading = MutableStateFlow(false)
 
-    fun fetchPatient(userId : String , onErro : (String)->Unit){
+    fun fetchPatient(userId : String , onError: (String)->Unit){
         isLoading.value=true
         viewModelScope.launch {
             val response = repo.fetchPatient(userId)
@@ -28,7 +28,7 @@ class GuardianSidePatientDetailsVM @Inject constructor(private val repo: Repo) :
             }
             response.onFailure {
                 error->
-                onErro(error.message.toString())
+                onError(error.message.toString())
                 isLoading.value=false
             }
         }

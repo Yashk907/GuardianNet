@@ -33,7 +33,7 @@ const connectToPatient = asyncHandler(async (req, res) => {
     throw new ApiError(400, "patient Not exists");
   }
 
-  const alreadyConnected = patient.guardians.some((g) => g.guardian.toString() === guardian.userId.toString())
+  const alreadyConnected = patient.guardians.some((g) => g.guardian.toString() === guardian._id.toString())
 
   if(alreadyConnected){
     throw new ApiError(400, "already connected!!")
@@ -46,14 +46,14 @@ const connectToPatient = asyncHandler(async (req, res) => {
 
   patient.guardians.push(
     {
-      guardian : guardian.userId,
+      guardian : guardian._id,
       isPrimary : !isPrimary
     }
   )
   await patient.save();
 
   guardian.patients.push({
-    patient : patient.userId,
+    patient : patient._id,
     isPrimary : !isPrimary
   })
 
@@ -61,8 +61,8 @@ const connectToPatient = asyncHandler(async (req, res) => {
 
   return res.status(200).json(
      new ApiResponse("Patient linked successfully", {
-      patientId: patient.userId,
-      guardianId: guardian.userId,
+      patientId: patient._id,
+      guardianId: guardian._id,
       isPrimary: !isPrimary
     })
   )
@@ -127,6 +127,7 @@ const getGuardian = asyncHandler(async(req,res)=>{
   const guardian = await Guardian.findOne(
     {userId}
   )
+  .populate("patients.patient")
 
   if(!guardian){
     throw new ApiError(400,"guardian does not exist")

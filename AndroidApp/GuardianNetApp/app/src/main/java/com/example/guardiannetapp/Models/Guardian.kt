@@ -9,9 +9,9 @@ import kotlinx.serialization.Serializable
 data class Guardian(
     @SerialName("_id")
     val id: String = "", // MongoDB _id
-
+    val userName : String = "",
     val userId: String = "", // References User._id
-    val patients: List<GuardianPatient> = emptyList(), // Patients array
+    val patients: List<GuardianPatientObject> = emptyList(), // Patients array
     val address : String ="",
 
     val createdAt: String? = null, // timestamps
@@ -19,7 +19,26 @@ data class Guardian(
 )
 
 @Serializable
-data class GuardianPatient(
-    val patient: Patient, // References Patient._id
+data class GuardianPatientObject(
+    val patient: GuardianPatient, // References Patient._id
     val isPrimary: Boolean = false
+)
+
+@Serializable
+data class GuardianPatient(
+    val _id: String = "",
+
+    val userId: String = "", // References User._id
+    val userName: String = "",
+
+    val safeZoneCenter: SafeZoneCenter = SafeZoneCenter(),
+    val safeZoneRadius: Int = 1000,
+
+    val linkCode: String? = null,
+
+    val status: String = "Safe", // Safe, Breached, Emergency
+
+    val address : String ="",
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 )

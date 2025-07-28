@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import com.example.guardiannet.Login.SignInScreen
 import com.example.guardiannetapp.Screens.GuardianScreens.GuardianSidePatientDetailsScreen
 import com.example.guardiannetapp.Screens.GuardianScreens.GuardiansideControlScreen
+import com.example.guardiannetapp.Screens.PatientScreens.HomeScreen.PatientSideControlScreen
 import com.example.guardiannetapp.Screens.SignUpScreen.RegistrationScreen
 import com.example.guardiannetapp.Screens.SignUpScreen.SignUpScreen
 import com.example.guardiannetapp.Viewmodels.AuthViewModel
@@ -58,8 +59,10 @@ fun Navigation(navHostController: NavHostController,
     }
 
         //patient
-        composable (route = Screen.PATIENTCONTROLSCREEN.name){
-
+        composable (route = "${Screen.PATIENTCONTROLSCREEN.name}/{patientId}"){
+            backstackEntry->
+            val userId = backstackEntry.arguments?.getString("patientId")
+            PatientSideControlScreen(userId.toString())
         }
 
     }

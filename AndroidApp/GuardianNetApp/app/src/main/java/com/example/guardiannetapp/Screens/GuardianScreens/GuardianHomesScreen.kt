@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.guardiannetapp.Models.GuardianPatient
+import com.example.guardiannetapp.Models.GuardianPatientObject
 import com.example.guardiannetapp.Models.Patient
 import com.example.guardiannetapp.Viewmodels.GurdianViewmodels.GuardianHomeScreenVM
 
@@ -42,7 +43,7 @@ import com.example.guardiannetapp.Viewmodels.GurdianViewmodels.GuardianHomeScree
 fun GuardianHomeScreen(
     userId : String,
     viewModel : GuardianHomeScreenVM,
-    onPatientClick: (Patient) -> Unit = {},
+    onPatientClick: (GuardianPatient) -> Unit = {},
     onAddPatientClick: () -> Unit = {},
     modifier: Modifier= Modifier
 ) {
@@ -58,7 +59,7 @@ fun GuardianHomeScreen(
         }
     }
     Surface(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF5F5F7)
     ) {
         if (isLoading.value) {
@@ -81,7 +82,7 @@ fun GuardianHomeScreen(
                 if (guardian.value.patients.isNotEmpty()) {
                     item { SectionHeader("My Patients (${guardian.value.patients.size})") }
                     items(guardian.value.patients) { patient ->
-                        CompactPatientCard(patient = patient.patient, onClick = { onPatientClick(patient.patient) })
+                        CompactPatientCard(patient = patient, onClick = { onPatientClick(patient.patient) })
                     }
                 }
 
@@ -110,7 +111,7 @@ fun GuardianHomeScreen(
 
 @Composable
 fun CompactPatientCard(
-    patient: Patient,
+    patient: GuardianPatientObject,
     onClick: () -> Unit,
     isNearbyRequest: Boolean = false
 ) {
@@ -149,7 +150,7 @@ fun CompactPatientCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = patient.userName ?: "Unknown Patient",
+                        text = patient.patient.userName ?: "Unknown Patient",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF2C2C2C),
@@ -158,7 +159,7 @@ fun CompactPatientCard(
                         modifier = Modifier.weight(1f)
                     )
 
-                    if (!isNearbyRequest && isPrimaryGuardian(patient)) {
+                    if (!isNearbyRequest && patient.isPrimary) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
@@ -176,7 +177,7 @@ fun CompactPatientCard(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${patient.safeZoneRadius}m safe zone",
+                    text = "${patient.patient.safeZoneRadius}m safe zone",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
@@ -185,7 +186,7 @@ fun CompactPatientCard(
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(horizontalAlignment = Alignment.End) {
-                StatusBadge(patient.status)
+                StatusBadge(patient.patient.status)
                 Spacer(modifier = Modifier.height(4.dp))
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowRight,
@@ -276,7 +277,3 @@ fun EmptyState(onAddPatientClick: () -> Unit) {
     }
 }
 
-// Utility
-private fun isPrimaryGuardian(patient: Patient): Boolean {
-    return patient.guardians.any { it.isPrimary }
-}

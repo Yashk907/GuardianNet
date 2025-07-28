@@ -75,6 +75,22 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
+
+    //maps
+
+// Maps Compose
+    implementation("com.google.maps.android:maps-compose:4.3.0")
+
+    // Maps Utils (optional)
+    implementation("com.google.maps.android:maps-utils-ktx:3.4.0")
+
+    // Google Maps
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
+
+    //location
+    implementation ("com.google.android.gms:play-services-location:21.3.0")
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

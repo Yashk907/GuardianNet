@@ -88,7 +88,7 @@ fun SignInScreen(
                         popUpTo(0) { inclusive = true }
                         launchSingleTop = true
                     }
-                    "Patient" -> navController.navigate(Screen.PATIENTCONTROLSCREEN.name){
+                    "Patient" -> navController.navigate("${Screen.PATIENTCONTROLSCREEN.name}/${it.data.user._id}"){
                         popUpTo(0){inclusive =true}
                         launchSingleTop = true
                     }

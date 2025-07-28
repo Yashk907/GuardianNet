@@ -69,6 +69,7 @@ const getPatientData = asyncHandler(async (req,res)=>{
     const patient = await Patient.findOne({
         userId : userId
     })
+    .populate("guardians.guardian")
 
     if(!patient){
         throw new ApiError(400,"Patient does not exist")

@@ -6,6 +6,8 @@ import com.example.guardiannetapp.Models.Patient
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,6 +27,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.guardiannetapp.Models.Guardian
+import com.example.guardiannetapp.Models.PatientGuardian
+import com.example.guardiannetapp.Models.PatientGuardianObject
 import com.example.guardiannetapp.Viewmodels.GurdianViewmodels.GuardianSidePatientDetailsVM
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,7 +92,9 @@ fun GuardianSidePatientDetailsScreen(
                 PatientInfoSection(patientDetails = patient)
 
                 // Caretaker Details Section
-                CaretakerDetailsSection(caretaker = patient)
+                CaretakerDetailsSection(guardian  =   patient.guardians.firstOrNull { it.isPrimary })
+
+
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -237,33 +244,43 @@ fun PatientInfoSection(patientDetails: Patient) {
 
 // Caretaker Details Section
 @Composable
-fun CaretakerDetailsSection(caretaker: Patient) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Section Header
+fun CaretakerDetailsSection(guardian: PatientGuardianObject?) {
+    val caretaker = guardian?.guardian
+    if(caretaker!=null){
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Section Header
+            Text(
+                text = "Caretaker details",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF4CAF50)
+            )
+
+            DetailRow(
+                label = "Name:",
+                value = caretaker.userName
+            )
+
+            DetailRow(
+                label = "Address:",
+                value = caretaker.address
+            )
+
+            DetailRow(
+                label = "Contact:",
+                value = caretaker.address
+            )
+        }
+    }else{
         Text(
-            text = "Caretaker details",
+            text = "No caretaker found",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF4CAF50)
-        )
-
-        DetailRow(
-            label = "Name:",
-            value = caretaker.userName
-        )
-
-        DetailRow(
-            label = "Address:",
-            value = caretaker.address
-        )
-
-        DetailRow(
-            label = "Contact:",
-            value = caretaker.address
-        )
+            color = Color(0xFF4CAF50))
     }
+
 }
 
 // Reusable Detail Row Component

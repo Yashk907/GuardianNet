@@ -7,8 +7,8 @@ import kotlinx.serialization.SerialName
 
 @Serializable
 data class Patient(
-    @SerialName("_id")
-    val id: String = "",
+//    @SerialName("_id")
+    val _id: String = "",
 
     val userId: String = "", // References User._id
     val userName: String = "",
@@ -16,7 +16,7 @@ data class Patient(
     val safeZoneCenter: SafeZoneCenter = SafeZoneCenter(),
     val safeZoneRadius: Int = 1000,
 
-    val guardians: List<PatientGuardian> = emptyList(),
+    val guardians: List<PatientGuardianObject> = emptyList(),
     val linkCode: String? = null,
 
     val status: String = "Safe", // Safe, Breached, Emergency
@@ -33,7 +33,22 @@ data class SafeZoneCenter(
 )
 
 @Serializable
-data class PatientGuardian(
-    val guardian: String = "", // Guardian ID
+data class PatientGuardianObject(
+    val guardian: PatientGuardian = PatientGuardian(), // Guardian ID
     val isPrimary: Boolean = false
 )
+
+@Serializable
+data class PatientGuardian(
+    @SerialName("_id")
+    val id: String = "", // MongoDB _id
+    val userName : String = "",
+    val userId: String = "", // References User._id
+//    val patients: List<GuardianPatient> = emptyList(), // Patients array
+    val address : String ="",
+
+    val createdAt: String? = null, // timestamps
+    val updatedAt: String? = null
+)
+
+

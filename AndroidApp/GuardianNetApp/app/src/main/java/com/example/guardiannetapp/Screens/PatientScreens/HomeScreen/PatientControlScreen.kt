@@ -1,18 +1,41 @@
-package com.example.guardiannetapp.Screens.GuardianScreens
+package com.example.guardiannetapp.Screens.PatientScreens.HomeScreen
 
 
-import AddPatientScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,13 +45,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import com.example.guardiannetapp.Navigation.Screen
 import com.example.guardiannetapp.R
+import com.example.guardiannetapp.Screens.GuardianScreens.GuardianBottomNavItem
+import com.example.guardiannetapp.Screens.GuardianScreens.GuardianBottomNavigation
+import com.example.guardiannetapp.Screens.GuardianScreens.GuardianTopBar
 import com.example.guardiannetapp.ui.theme.Poppins
 
-// Bottom Navigation items
 data class GuardianBottomNavItem(
     val title: String,
     val unselectedIcon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -37,33 +59,26 @@ data class GuardianBottomNavItem(
     val isSpecial: Boolean = false
 )
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GuardiansideControlScreen(
-    userId : String,
-    navController: NavController,
+fun PatientSideControlScreen(
+    userId : String
 ) {
     val selectTab = rememberSaveable { mutableStateOf("home") }
-    val notificationCount = rememberSaveable { mutableStateOf(0) }
-    val guardianName = rememberSaveable { mutableStateOf("Guardian") }
-    val hasEmergencyAlert = rememberSaveable { mutableStateOf(false)}
+
+
     Scaffold(
         topBar = {
-            GuardianTopBar(
-                guardianName = guardianName.value,
-                hasEmergencyAlert = hasEmergencyAlert.value,
-                notificationCount = notificationCount.value,
-                onNotificationClick = {  }
-            )
-        },
-        bottomBar = {
-            GuardianBottomNavigation(
-                selectedTab = selectTab.value,
-                onSelectTab = {selectTab.value=it}
-            )
-        },
+            PatientTopBar(
+            patientName = "Patient",
+            notificationCount = 0,
+            hasEmergencyAlert = false,
+            onNotificationClick = {  }
+        )},
+        bottomBar = {PatientBottomBar(
+            selectedTab = selectTab.value,
+            onSelectTab = {selectTab.value=it}
+        )},
         containerColor = Color(0xFFF5F5F7)
     ) { paddingValues ->
         Box(
@@ -71,34 +86,22 @@ fun GuardiansideControlScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Sample Data
-
-
-            // Show screen based on selected route
-            when (selectTab.value) {
-                "home" -> GuardianHomeScreen(userId,hiltViewModel(),
-                    onPatientClick = {
-                        navController.navigate("${Screen.PATIENTDETAILSCREEN.name}/${it.userId}")
-                    },
-                    modifier = Modifier.padding(paddingValues))
-                "add_patient" -> AddPatientScreen(hiltViewModel(),userId, modifier = Modifier.padding(paddingValues))
-                "profile" -> {
-                    Text("Profile Screen", modifier = Modifier.align(Alignment.Center))
-                }
-
+            when(selectTab.value){
+                "home" -> PatientHomeScreen(PatientHomeUiState())
+                "profile" -> Text("Profile Screen", modifier = Modifier.align(Alignment.Center))
             }
         }
+
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GuardianTopBar(
-    guardianName: String,
-    notificationCount: Int,
-    hasEmergencyAlert: Boolean,
-    onNotificationClick: () -> Unit
-) {
+fun PatientTopBar(patientName: String = "Patient",
+                  notificationCount: Int,
+                  hasEmergencyAlert: Boolean,
+                  onNotificationClick: () -> Unit){
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -114,7 +117,7 @@ fun GuardianTopBar(
                 Column {
                     Text("Welcome back,", fontSize = 12.sp, color = Color.Gray, fontFamily = Poppins)
                     Text(
-                        guardianName,
+                        patientName,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF2C2C2C),
@@ -153,14 +156,14 @@ fun GuardianTopBar(
     )
 }
 
+
 @Composable
-fun GuardianBottomNavigation(
+fun PatientBottomBar(
     selectedTab: String,
     onSelectTab: (String) -> Unit
-) {
+){
     val items = listOf(
         GuardianBottomNavItem("Home", Icons.Outlined.Home, Icons.Filled.Home, "home"),
-        GuardianBottomNavItem("Add Patient", Icons.Default.Add, Icons.Default.Add, "add_patient", true),
         GuardianBottomNavItem("Profile", Icons.Outlined.Person, Icons.Filled.Person, "profile")
     )
 
@@ -231,14 +234,3 @@ fun GuardianBottomNavigation(
         }
     }
 }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun ControlScreenPreview() {
-//    var selectedTab by remember { mutableStateOf("home") }
-//
-//    MaterialTheme {
-//        GuardiansideControlScreen(
-//        )
-//    }
-//}
