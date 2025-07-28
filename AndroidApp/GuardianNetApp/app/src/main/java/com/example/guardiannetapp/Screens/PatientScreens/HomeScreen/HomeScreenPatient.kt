@@ -2,6 +2,8 @@ package com.example.guardiannetapp.Screens.PatientScreens.HomeScreen
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -35,11 +37,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import com.example.guardiannetapp.Screens.PatientScreens.LocationUtils.LocationUtils
+import com.example.guardiannetapp.services.LocationService
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.LocationSource
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -48,6 +55,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.delay
+import kotlin.jvm.java
 
 data class PatientHomeUiState(
     val isLoading: Boolean = false,
@@ -76,9 +84,52 @@ fun PatientHomeScreen(
     onCodeCopy: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
     val context = LocalContext.current
-    val cameraPositionState = rememberCameraPositionState()
+
+    // Permissions
+    val fineLocationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+    val backgroundLocationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+
+    // Step 1: Request fine location first
+    LaunchedEffect(fineLocationPermissionState.status.isGranted) {
+        if (!fineLocationPermissionState.status.isGranted) {
+            fineLocationPermissionState.launchPermissionRequest()
+        }
+    }
+
+    // UI & Logic
+    when {
+        !fineLocationPermissionState.status.isGranted -> {
+            Text("Location permission required")
+        }
+
+        fineLocationPermissionState.status.isGranted && !backgroundLocationPermissionState.status.isGranted -> {
+            // Step 2: Request background location after fine location granted
+            LaunchedEffect(backgroundLocationPermissionState.status.isGranted) {
+                if (!backgroundLocationPermissionState.status.isGranted) {
+                    backgroundLocationPermissionState.launchPermissionRequest()
+                }
+            }
+            Text("Background location permission required")
+        }
+
+        fineLocationPermissionState.status.isGranted && backgroundLocationPermissionState.status.isGranted -> {
+            // Step 3: Start service once all permissions granted
+            LaunchedEffect(Unit) {
+                val intent = Intent(context, LocationService::class.java)
+                ContextCompat.startForegroundService(context, intent)
+            }
+
+
+        }
+    }
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(18.4575, 73.8500), // Example: VIIT Pune
+            15f // Zoom level
+        )
+    }
     val scrollState = rememberScrollState()
 
     // Animation states
@@ -88,31 +139,9 @@ fun PatientHomeScreen(
         animationSpec = tween(600)
     )
 
-    LaunchedEffect(Unit) {
-        isVisible = true
-        if (!locationPermissionState.status.isGranted) {
-            locationPermissionState.launchPermissionRequest()
-        }
-    }
 
-    // Update camera position when permission is granted
-    if (locationPermissionState.status.isGranted) {
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-        LaunchedEffect(Unit) {
-            try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    location?.let {
-                        cameraPositionState.position = CameraPosition(
-                            LatLng(it.latitude, it.longitude),
-                            16f, 0f, 0f
-                        )
-                    }
-                }
-            } catch (e: SecurityException) {
-                // Handle permission error
-            }
-        }
-    }
+
+
 
     Box(
         modifier = modifier
@@ -126,7 +155,7 @@ fun PatientHomeScreen(
                 )
             )
     ) {
-        if (locationPermissionState.status.isGranted) {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -168,11 +197,7 @@ fun PatientHomeScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
             }
-        } else {
-            PermissionRequestScreen(
-                onRequestPermission = { locationPermissionState.launchPermissionRequest() }
-            )
-        }
+
 
         // Loading overlay
         if (uiState.isLoading) {
@@ -492,6 +517,7 @@ private fun LocationMapCard(
                         mapToolbarEnabled = false
                     )
                 )
+
             }
         }
     }

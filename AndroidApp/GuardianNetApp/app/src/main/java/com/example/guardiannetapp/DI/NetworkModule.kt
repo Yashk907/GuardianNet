@@ -18,7 +18,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit() : Retrofit{
         return Retrofit.Builder()
-            .baseUrl("https://guardiannet-production.up.railway.app")
+            .baseUrl("https://guardiannet-production.up.railway.app/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
