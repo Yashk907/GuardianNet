@@ -1,6 +1,5 @@
 package com.example.guardiannetapp.services
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -11,29 +10,44 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import com.example.guardiannetapp.R
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
+import com.example.guardiannetapp.Viewmodels.PatientViewModel.getDouble
+import com.google.android.gms.location.*
+import io.socket.client.IO
+import io.socket.client.Socket
+import org.json.JSONObject
 
 class LocationService : Service() {
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+    private lateinit var socket: Socket
 
-    // Store safe zone values here
     private var safeZoneLat: Double = 0.0
     private var safeZoneLng: Double = 0.0
-    private var radius: Float = 100f
+    private var radius: Int = 1000
+    private var userId: String = ""
 
     override fun onCreate() {
         super.onCreate()
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
+        // Initialize Socket.IO
+        try {
+            socket = IO.socket("https://guardiannet-production.up.railway.app")
+        } catch (e: Exception) {
+            Log.e("SocketIO", "Error: ${e.message}")
+        }
+
+        // Connect
+        socket.connect()
+
+        // Optional: Listen for responses from server
+        socket.on("patientLocation") { args ->
+            Log.d("SocketIO", "Server: ${args[0]}")
+        }
+
+        // Location callback
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 result.lastLocation?.let { location ->
@@ -44,15 +58,23 @@ class LocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Extract values from Intent
-        safeZoneLat = intent?.getDoubleExtra("center_lat", 0.0) ?: 0.0
-        safeZoneLng = intent?.getDoubleExtra("center_lng", 0.0) ?: 0.0
-        radius = intent?.getFloatExtra("radius", 100f) ?: 100f
-        Log.d("Location",safeZoneLat.toString())
+        val sharedPrefs = getSharedPreferences("SafeZonePrefs", MODE_PRIVATE)
+        safeZoneLat = sharedPrefs.getDouble("center_lat", 0.0)
+        safeZoneLng = sharedPrefs.getDouble("center_lng", 0.0)
+        radius = sharedPrefs.getInt("radius", 1000)
+        userId = sharedPrefs.getString("userId", "") ?: ""
+
+        // Register patient
+        val registerData = JSONObject()
+        registerData.put("role", "Patient")
+        registerData.put("userId", userId)
+        socket.emit("register", registerData)
+
+        Log.d("LocationService", "Registered Patient: $userId")
 
         startForegroundServiceNotification()
-
         startLocationUpdates()
+
         return START_STICKY
     }
 
@@ -68,32 +90,6 @@ class LocationService : Service() {
         )
     }
 
-    /** Show foreground notification **/
-    @SuppressLint("ForegroundServiceType")
-    private fun startForegroundServiceNotification() {
-        val channelId = "location_service_channel"
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                "Location Service",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
-
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("GuardianNet is tracking location")
-            .setContentText("Your location is being monitored for safety")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
-
-        startForeground(1, notification)
-    }
-
-    /** Check if location is inside safe zone **/
     private fun checkSafeZone(location: Location) {
         val distance = FloatArray(1)
         Location.distanceBetween(
@@ -106,21 +102,50 @@ class LocationService : Service() {
 
         if (distance[0] > radius) {
             sendOutsideSafeZoneNotification()
+
+            // Send location update to server
+            val json = JSONObject()
+            json.put("userId", userId)
+            json.put("lat", location.latitude)
+            json.put("lng", location.longitude)
+            json.put("outsideSafeZone", true)
+
+            socket.emit("locationUpdate", json)
+            Log.d("SocketIO", "Location sent: $json")
         }
     }
 
-    /** Send alert notification **/
+    @SuppressLint("ForegroundServiceType")
+    private fun startForegroundServiceNotification() {
+        val channelId = "location_service_channel"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Location Service",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        }
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("GuardianNet is tracking location")
+            .setContentText("Your location is being monitored for safety")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+
+        startForeground(1, notification)
+    }
+
     private fun sendOutsideSafeZoneNotification() {
         val channelId = "safezone_alert_channel"
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
                 "Safe Zone Alerts",
                 NotificationManager.IMPORTANCE_HIGH
             )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
 
         val notification = NotificationCompat.Builder(this, channelId)
@@ -130,8 +155,7 @@ class LocationService : Service() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
 
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.notify(2, notification)
+        getSystemService(NotificationManager::class.java).notify(2, notification)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -139,5 +163,6 @@ class LocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        socket.disconnect()
     }
 }

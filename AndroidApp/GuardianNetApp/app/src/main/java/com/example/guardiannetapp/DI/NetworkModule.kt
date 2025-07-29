@@ -1,10 +1,13 @@
 package com.example.guardiannetapp.DI
 
+import android.content.Context
+import android.content.SharedPreferences
 import com.example.guardiannetapp.API.AuthApi
 import com.example.guardiannetapp.Repo.Repo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -32,4 +35,10 @@ object NetworkModule {
     @Singleton
     fun provideAuthRepository(api: AuthApi): Repo =
         Repo(api)
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        return context.getSharedPreferences("SafeZonePrefs", Context.MODE_PRIVATE)
+    }
 }

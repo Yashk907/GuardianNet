@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -125,6 +126,7 @@ fun PatientHomeScreen(
                         Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                     }
                 ) { patientData ->   // now success callback works
+                    Log.d("patientDat",patientData.toString())
                     val lat = patientData.safeZoneCenter.coordinates[0]
                     val lng = patientData.safeZoneCenter.coordinates[1]
                     val radius = patientData.safeZoneRadius
