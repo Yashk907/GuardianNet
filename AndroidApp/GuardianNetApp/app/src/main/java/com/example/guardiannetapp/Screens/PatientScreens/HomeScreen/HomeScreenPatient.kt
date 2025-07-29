@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -41,11 +42,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.guardiannetapp.Screens.PatientScreens.LocationUtils.LocationUtils
+import com.example.guardiannetapp.Viewmodels.PatientViewModel.PatientHomeScreenVM
 import com.example.guardiannetapp.services.LocationService
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.LocationSource
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
@@ -71,13 +72,14 @@ data class PatientHomeUiState(
 
 enum class SafeZoneStatus(val displayName: String, val color: Color) {
     SAFE("Safe Zone", Color(0xFF27AE60)),
-    WARNING("Near Boundary", Color(0xFFF39C12)),
     BREACH("Outside Zone", Color(0xFFE74C3C))
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PatientHomeScreen(
+    userId : String,
+    viewModel : PatientHomeScreenVM ,
     uiState: PatientHomeUiState = PatientHomeUiState(),
     onHelpClick: () -> Unit = {},
     onTakeMeHomeClick: () -> Unit = {},
@@ -85,6 +87,7 @@ fun PatientHomeScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val patient = viewModel.patient.collectAsState()
 
     // Permissions
     val fineLocationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -116,8 +119,23 @@ fun PatientHomeScreen(
         fineLocationPermissionState.status.isGranted && backgroundLocationPermissionState.status.isGranted -> {
             // Step 3: Start service once all permissions granted
             LaunchedEffect(Unit) {
-                val intent = Intent(context, LocationService::class.java)
-                ContextCompat.startForegroundService(context, intent)
+                viewModel.fetchPatient(
+                    userId = userId,
+                    onError = {
+                        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                    }
+                ) { patientData ->   // now success callback works
+                    val lat = patientData.safeZoneCenter.coordinates[0]
+                    val lng = patientData.safeZoneCenter.coordinates[1]
+                    val radius = patientData.safeZoneRadius
+
+                    val intent = Intent(context, LocationService::class.java).apply {
+                        putExtra("center_lat", lat)
+                        putExtra("center_lng", lng)
+                        putExtra("radius", radius)
+                    }
+                    ContextCompat.startForegroundService(context, intent)
+                }
             }
 
 
@@ -582,23 +600,23 @@ private fun PermissionRequestScreen(
         }
     }
 }
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun PatientHomeScreenPreview() {
-    MaterialTheme {
-        PatientHomeScreen(
-            uiState = PatientHomeUiState(
-                userName = "Yash Karande",
-                userCode = "6X278Y5",
-                currentLocationName = "VIIT College, Pune",
-                safeZoneStatus = SafeZoneStatus.SAFE,
-                connectedGuardians = 3,
-                batteryLevel = 85
-            ),
-            onHelpClick = { },
-            onTakeMeHomeClick = { },
-            onCodeCopy = { }
-        )
-    }
-}
+//
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//private fun PatientHomeScreenPreview() {
+//    MaterialTheme {
+//        PatientHomeScreen(
+//            uiState = PatientHomeUiState(
+//                userName = "Yash Karande",
+//                userCode = "6X278Y5",
+//                currentLocationName = "VIIT College, Pune",
+//                safeZoneStatus = SafeZoneStatus.SAFE,
+//                connectedGuardians = 3,
+//                batteryLevel = 85
+//            ),
+//            onHelpClick = { },
+//            onTakeMeHomeClick = { },
+//            onCodeCopy = { }
+//        )
+//    }
+//}

@@ -90,14 +90,14 @@ const setSafeLocation = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Patient not found");
   }
 
-  // 3. Check if guardian is primary for patient
-  const guardianRelation = patient.guardians.find(
-    (g) => g.guardian.toString() === guardian.userId.toString()
-  );
+  // // 3. Check if guardian is primary for patient
+  // const guardianRelation = patient.guardians.find(
+  //   (g) => g.guardian.toString() === guardian.userId.toString()
+  // );
 
-  if (!guardianRelation || !guardianRelation.isPrimary) {
-    throw new ApiError(403, "Only primary guardian can set safe location");
-  }
+  // if (!guardianRelation || !guardianRelation.isPrimary) {
+  //   throw new ApiError(403, "Only primary guardian can set safe location");
+  // }
 
   // 4. Update safe location
   patient.safeZoneCenter = {

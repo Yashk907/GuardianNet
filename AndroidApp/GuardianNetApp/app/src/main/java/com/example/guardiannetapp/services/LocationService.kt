@@ -9,15 +9,26 @@ import android.content.Intent
 import android.location.Location
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.guardiannetapp.R
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 
 class LocationService : Service() {
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+
+    // Store safe zone values here
+    private var safeZoneLat: Double = 0.0
+    private var safeZoneLng: Double = 0.0
+    private var radius: Float = 100f
 
     override fun onCreate() {
         super.onCreate()
@@ -30,30 +41,34 @@ class LocationService : Service() {
                 }
             }
         }
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Extract values from Intent
+        safeZoneLat = intent?.getDoubleExtra("center_lat", 0.0) ?: 0.0
+        safeZoneLng = intent?.getDoubleExtra("center_lng", 0.0) ?: 0.0
+        radius = intent?.getFloatExtra("radius", 100f) ?: 100f
+        Log.d("Location",safeZoneLat.toString())
+
+        startForegroundServiceNotification()
+
+        startLocationUpdates()
+        return START_STICKY
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
         val locationRequest = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
             5000 // 5 seconds
         ).build()
 
-        // Start location updates if permission granted
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            fusedLocationProviderClient.requestLocationUpdates(
-                locationRequest, locationCallback, mainLooper
-            )
-        }
+        fusedLocationProviderClient.requestLocationUpdates(
+            locationRequest, locationCallback, mainLooper
+        )
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForegroundServiceNotification()
-        return START_STICKY
-    }
-
-    /** Show foreground notification so service is not killed **/
+    /** Show foreground notification **/
     @SuppressLint("ForegroundServiceType")
     private fun startForegroundServiceNotification() {
         val channelId = "location_service_channel"
@@ -71,7 +86,7 @@ class LocationService : Service() {
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle("GuardianNet is tracking location")
             .setContentText("Your location is being monitored for safety")
-            .setSmallIcon(R.mipmap.ic_launcher) // ✅ use valid icon
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
 
@@ -80,11 +95,6 @@ class LocationService : Service() {
 
     /** Check if location is inside safe zone **/
     private fun checkSafeZone(location: Location) {
-        // Replace these with actual values from server/db
-        val safeZoneLat = 18.462760
-        val safeZoneLng = 73.879198
-        val radius = 1000 // meters
-
         val distance = FloatArray(1)
         Location.distanceBetween(
             location.latitude,
@@ -95,12 +105,11 @@ class LocationService : Service() {
         )
 
         if (distance[0] > radius) {
-            // Outside safe zone - send alert notification
             sendOutsideSafeZoneNotification()
         }
     }
 
-    /** Send notification when user is outside safe zone **/
+    /** Send alert notification **/
     private fun sendOutsideSafeZoneNotification() {
         val channelId = "safezone_alert_channel"
 
@@ -129,7 +138,6 @@ class LocationService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Stop location updates when service is destroyed
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
 }

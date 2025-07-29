@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.guardiannetapp.R
 import com.example.guardiannetapp.Screens.GuardianScreens.GuardianBottomNavItem
 import com.example.guardiannetapp.Screens.GuardianScreens.GuardianBottomNavigation
@@ -87,7 +88,7 @@ fun PatientSideControlScreen(
                 .padding(paddingValues)
         ) {
             when(selectTab.value){
-                "home" -> PatientHomeScreen(PatientHomeUiState())
+                "home" -> PatientHomeScreen(userId, hiltViewModel())
                 "profile" -> Text("Profile Screen", modifier = Modifier.align(Alignment.Center))
             }
         }
