@@ -43,45 +43,44 @@ io.on("connection", (socket) => {
 
   // LOCATION UPDATE from patient 
   socket.on("locationUpdate", async (data) => {
-    console.log(" Location updated:", data);
+  console.log("Location updated:", data);
 
-    try {
-      // Find patient
-      const patient = await Patient.findOne({ userId: data.userId });
-      if (!patient) {
-        console.log(" Patient does not exist");
-        return;
-      }
-
-      // Find primary guardian from patient's guardians array
-      const primaryGuardian = patient.guardians.find((g) => g.isPrimary === true);
-      if (!primaryGuardian) {
-        console.log(" No primary guardian found for this patient");
-        return;
-      }
-
-      const guardianId = primaryGuardian.userId
-
-      // Find guardian
-      const guardian = await Guardian.findOne({
-        guardianId
-      });
-      if (!guardian) {
-        console.log(" Guardian does not exist");
-        return;
-      }
-
-      // Emit location update to guardian if connected
-      if (guardianSockets[guardianId]) {
-        io.to(guardianSockets[guardianId]).emit("patientLocation", data);
-        console.log(`Sent location update to Guardian ${guardianId}`);
-      } else {
-        console.log(` Guardian ${guardianId} not connected`);
-      }
-    } catch (err) {
-      console.error(" Error in locationUpdate:", err.message);
+  try {
+    // Find patient
+    const patient = await Patient.findOne({ userId: data.userId }).populate("guardians.guardian");
+    if (!patient) {
+      console.log("Patient does not exist");
+      return;
     }
-  });
+
+    // Find primary guardian
+    const primaryGuardian = patient.guardians.find((g) => g.isPrimary === true);
+    if (!primaryGuardian) {
+      console.log("No primary guardian found for this patient");
+      return;
+    }
+
+    // Extract guardian ObjectId and userId
+    const guardianObj = primaryGuardian.guardian;
+    if (!guardianObj) {
+      console.log("Guardian not found in populated data");
+      return;
+    }
+
+    const guardianId = guardianObj.userId; // guardian userId from the Guardian model
+
+    // Emit location update to guardian if connected
+    if (guardianSockets[guardianId]) {
+      io.to(guardianSockets[guardianId]).emit("patientLocation", data);
+      console.log(`Sent location update to Guardian ${guardianId}`);
+    } else {
+      console.log(`Guardian ${guardianId} not connected`);
+    }
+
+  } catch (err) {
+    console.error("Error in locationUpdate:", err.message);
+  }
+});
 
   /** Handle disconnect **/
   socket.on("disconnect", () => {
