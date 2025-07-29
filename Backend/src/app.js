@@ -15,7 +15,10 @@ app.use(express.static("public"));
 
 // create socket.io server
 const io = new Server(server, {
-  cors: cors()
+  cors: {
+    origin: "*",  // Or your frontend domain
+    methods: ["GET", "POST"]
+  }
 });
 
 let guardianSockets = {}; // {guardianId : socketId}
