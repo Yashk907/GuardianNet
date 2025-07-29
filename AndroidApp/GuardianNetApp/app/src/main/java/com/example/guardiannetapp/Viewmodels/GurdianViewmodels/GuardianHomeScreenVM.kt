@@ -1,5 +1,6 @@
 package com.example.guardiannetapp.Viewmodels.GurdianViewmodels
 
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -13,7 +14,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class GuardianHomeScreenVM @Inject constructor(private val authRepo: Repo) : ViewModel() {
+class GuardianHomeScreenVM @Inject constructor(private val authRepo: Repo,
+    private val sharedPreferences: SharedPreferences) : ViewModel() {
     private val _guardian : MutableStateFlow<Guardian> = MutableStateFlow(Guardian())
     val guardian = _guardian
 
@@ -32,6 +34,11 @@ class GuardianHomeScreenVM @Inject constructor(private val authRepo: Repo) : Vie
                 _guardian.value = response.data
                 isLoading.value = false
                 Log.d("guardian",response.data.toString())
+
+                sharedPreferences.edit().apply {
+                    putString("guardianUserId", userId)
+                    apply()
+                }
             }
             result.onFailure {
                 Log.d("error",it.message.toString())

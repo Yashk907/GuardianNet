@@ -106,5 +106,9 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/patients", patientRoutes);
 app.use("/api/v1/guardians", guardianRoutes);
 app.use("/api/v1/alerts", alertRoutes);
+app.get("/", (req, res) => {
+  res.status(200).send("GuardianNet backend running");
+});
+
 
 export { app, server };

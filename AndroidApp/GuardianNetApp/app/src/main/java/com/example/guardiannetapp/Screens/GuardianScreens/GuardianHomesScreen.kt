@@ -1,5 +1,7 @@
 package com.example.guardiannetapp.Screens.GuardianScreens
 
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -26,10 +28,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.guardiannetapp.Models.GuardianPatient
 import com.example.guardiannetapp.Models.GuardianPatientObject
 import com.example.guardiannetapp.Models.Patient
 import com.example.guardiannetapp.Viewmodels.GurdianViewmodels.GuardianHomeScreenVM
+import com.example.guardiannetapp.services.GuardianLocationListenerService
+import androidx.core.content.edit
 
 //enum class PatientStatus(val displayName: String, val color: Color) {
 //    SAFE("Safe", Color(0xFF4CAF50)),
@@ -51,13 +56,32 @@ fun GuardianHomeScreen(
     val guardian = viewModel.guardian.collectAsState()
     val context = LocalContext.current
 
+
     LaunchedEffect(Unit) {
-        Log.d("userId",userId)
-        viewModel.fetchGuardian (userId){
-            Toast.makeText(context,it, Toast.LENGTH_SHORT).show()
-            Log.d("guardian",it.toString())
+        Log.d("userId", userId)
+
+        // Fetch Guardian first
+        viewModel.fetchGuardian(userId) {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            Log.d("guardian", it.toString())
+        }
+
+    }
+    LaunchedEffect(viewModel.guardian.collectAsState().value.userId) {
+        val guardianId = viewModel.guardian.value.userId
+        if (guardianId.isNotEmpty()) {
+            // Save to SharedPreferences
+            context.getSharedPreferences("SafeZonePrefs", Context.MODE_PRIVATE)
+                .edit {
+                    putString("guardianUserId", guardianId)
+                }
+
+            // Start the service
+            val intent = Intent(context, GuardianLocationListenerService::class.java)
+            ContextCompat.startForegroundService(context, intent)
         }
     }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF5F5F7)

@@ -25,6 +25,11 @@
         <service android:name=".services.LocationService"
             android:enabled="true"
             android:exported="false"/>
+        <service
+            android:name=".services.GuardianLocationListenerService"
+            android:enabled="true"
+            android:exported="false" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAE3lbcUGGgTDYQL9gCk_9kczYaWgVahxY" />
