@@ -4,6 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
@@ -39,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
@@ -59,21 +62,11 @@ import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.delay
 import kotlin.jvm.java
 
-data class PatientHomeUiState(
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val currentLocationName: String = "VIIT College, Pune",
-    val userName: String = "Yash Karande",
-    val userPhotoUrl: String = "https://randomuser.me/api/portraits/men/32.jpg",
-    val userCode: String = "6X278Y5",
-    val safeZoneStatus: SafeZoneStatus = SafeZoneStatus.SAFE,
-    val connectedGuardians: Int = 3,
-    val batteryLevel: Int = 85
-)
+
 
 enum class SafeZoneStatus(val displayName: String, val color: Color) {
-    SAFE("Safe Zone", Color(0xFF27AE60)),
-    BREACH("Outside Zone", Color(0xFFE74C3C))
+    Safe("Safe Zone", Color(0xFF27AE60)),
+    Breached("Outside Zone", Color(0xFFE74C3C))
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -92,6 +85,19 @@ fun PatientHomeScreen(
     // Permissions
     val fineLocationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
     val backgroundLocationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                context as Activity,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                101
+            )
+        }
+    }
+
 
     // Step 1: Request fine location first
     LaunchedEffect(fineLocationPermissionState.status.isGranted) {
@@ -177,7 +183,7 @@ fun PatientHomeScreen(
                 userPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
                 userCode = patient.value?.linkCode ?: "XXXXXXX",
                 safeZoneStatus = if (patient.value?.status == "SAFE")
-                    SafeZoneStatus.SAFE else SafeZoneStatus.BREACH,
+                    SafeZoneStatus.Safe else SafeZoneStatus.Breached,
                 onCodeCopy = onCodeCopy,
                 modifier = Modifier.scale(cardScale)
             )
@@ -186,8 +192,8 @@ fun PatientHomeScreen(
 
             // Quick Stats Row
             QuickStatsRow(
-                safeZoneStatus = if (patient.value?.status == "SAFE")
-                    SafeZoneStatus.SAFE else SafeZoneStatus.BREACH,
+                safeZoneStatus = if (patient.value?.status == "Safe")
+                    SafeZoneStatus.Safe else SafeZoneStatus.Breached,
                 connectedGuardians = patient.value?.guardians?.size ?: 0,
                 batteryLevel = 85
             )
@@ -198,8 +204,8 @@ fun PatientHomeScreen(
             ActionButtonsSection(
                 onHelpClick = onHelpClick,
                 onTakeMeHomeClick = onTakeMeHomeClick,
-                safeZoneStatus = if (patient.value?.status== "SAFE")
-                    SafeZoneStatus.SAFE else SafeZoneStatus.BREACH
+                safeZoneStatus = if (patient.value?.status== "Safe")
+                    SafeZoneStatus.Safe else SafeZoneStatus.Breached
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -407,7 +413,7 @@ private fun ActionButtonsSection(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Emergency Help Button (priority based on status)
-        val helpButtonColor = if (safeZoneStatus == SafeZoneStatus.BREACH) {
+        val helpButtonColor = if (safeZoneStatus == SafeZoneStatus.Breached) {
             Color(0xFFE74C3C)
         } else {
             Color(0xFFFF6B6B)

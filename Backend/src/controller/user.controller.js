@@ -61,11 +61,11 @@ const registerUser = asyncHandler(async(req,res)=>{
             userName : user.name,
             safeZoneCenter :{
                 type: "Point",
-                coordinates: [0, 0] // Default coordinates, can be updated later
+                coordinates: [73.868636,18.463896] // Default coordinates, can be updated later
             },
             linkCode : await uniqueLinkCode(),
             guardians: [],
-            safeZoneRadius: 1000, // Default radius in meters
+            safeZoneRadius: 100000, // Default radius in meters
             status: "Safe",
             address : address
         })

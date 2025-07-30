@@ -41,7 +41,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  // LOCATION UPDATE from patient 
   socket.on("locationUpdate", async (data) => {
   console.log("Location updated:", data);
 
@@ -52,8 +51,21 @@ io.on("connection", (socket) => {
       console.log("Patient does not exist");
       return;
     }
-    patient.status = "Breached"
-    await patient.save()
+
+    // Check if patient is outside or inside safe zone
+    if (data.outsideSafeZone) {
+      // Patient breached safe zone
+      patient.status = "Breached";
+      await patient.save();
+    } else {
+      // Patient moved back inside safe zone
+      patient.status = "Safe";
+      await patient.save();
+
+      // Optionally resolve any active alert for this patient
+      // Example: update Alert model here if you track alerts separately
+      // await Alert.updateOne({ patient: patient._id, resolved: false }, { resolved: true });
+    }
 
     // Find primary guardian
     const primaryGuardian = patient.guardians.find((g) => g.isPrimary === true);
@@ -69,9 +81,9 @@ io.on("connection", (socket) => {
       return;
     }
 
-    const guardianId = guardianObj.userId; // guardian userId from the Guardian model
+    const guardianId = guardianObj.userId; // guardian userId from Guardian model
 
-    // Emit location update to guardian if connected
+    // Emit location update (with outsideSafeZone flag) to guardian if connected
     if (guardianSockets[guardianId]) {
       io.to(guardianSockets[guardianId]).emit("patientLocation", data);
       console.log(`Sent location update to Guardian ${guardianId}`);
@@ -83,6 +95,7 @@ io.on("connection", (socket) => {
     console.error("Error in locationUpdate:", err.message);
   }
 });
+
 
   /** Handle disconnect **/
   socket.on("disconnect", () => {

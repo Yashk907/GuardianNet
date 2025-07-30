@@ -27,6 +27,7 @@ class LocationService : Service() {
     private var safeZoneLng: Double = 0.0
     private var radius: Int = 1000
     private var userId: String = ""
+    private var outsideSafeZone: Boolean = false
 
     override fun onCreate() {
         super.onCreate()
@@ -34,7 +35,7 @@ class LocationService : Service() {
 
         // Initialize Socket.IO
         try {
-            socket = IO.socket("http://10.54.88.9:8000")
+            socket = IO.socket("http://10.136.192.9:8000")
         } catch (e: Exception) {
             Log.e("SocketIO", "Error: ${e.message}")
         }
@@ -101,6 +102,8 @@ class LocationService : Service() {
         )
 
         if (distance[0] > radius) {
+            if(!outsideSafeZone){
+                outsideSafeZone =true
             sendOutsideSafeZoneNotification()
 
             // Send location update to server
@@ -112,6 +115,22 @@ class LocationService : Service() {
 
             socket.emit("locationUpdate", json)
             Log.d("SocketIO", "Location sent: $json")
+            }
+        }else{
+            if(outsideSafeZone){
+                outsideSafeZone = false
+                val json = JSONObject()
+                json.put("userId", userId)
+                json.put("lat", location.latitude)
+                json.put("lng", location.longitude)
+                json.put("outsideSafeZone", false)
+
+                socket.emit("locationUpdate", json)
+                Log.d("SocketIO", "Location sent (INSIDE): $json")
+
+                sendBackToSafeZoneNotification()
+            }
+
         }
     }
 
@@ -165,4 +184,25 @@ class LocationService : Service() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         socket.disconnect()
     }
+    private fun sendBackToSafeZoneNotification() {
+        val channelId = "safezone_alert_channel"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Safe Zone Alerts",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        }
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("✅ Back in Safe Zone")
+            .setContentText("Patient has returned inside the safe zone")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+
+        getSystemService(NotificationManager::class.java).notify(3, notification)
+    }
+
 }

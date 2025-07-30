@@ -36,7 +36,7 @@ class GuardianLocationListenerService : Service() {
 
     private fun initSocket() {
         try {
-            socket = IO.socket("http://10.54.88.9:8000")
+            socket = IO.socket("http://10.136.192.9:8000/")
         } catch (e: Exception) {
             Log.e("GuardianWS", "Error: ${e.message}")
             return
@@ -60,7 +60,11 @@ class GuardianLocationListenerService : Service() {
             val lat = data.getDouble("lat")
             val lng = data.getDouble("lng")
             Log.d("GuardianWS", "Patient location: $lat,$lng")
-            showPatientLocationNotification(patientId, lat, lng)
+            if(data.getBoolean("outsideSafeZone")){
+                showPatientLocationNotification(patientId, lat, lng)
+            }else{
+                showSafeNotification(patientId)
+            }
         }
 
         socket.on(Socket.EVENT_DISCONNECT) {
@@ -106,6 +110,29 @@ class GuardianLocationListenerService : Service() {
         getSystemService(NotificationManager::class.java)
             .notify(patientId.hashCode(), notification)
     }
+    private fun showSafeNotification(patientId: String) {
+        val channelId = "patient_safe_zone_alert"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Patient Safe Zone Alerts",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        }
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("✅ Patient Back in Safe Zone")
+            .setContentText("Patient $patientId is now inside the safe zone")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+
+        // Use same notification ID as the outside alert so it REPLACES it
+        getSystemService(NotificationManager::class.java)
+            .notify(patientId.hashCode(), notification)
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()

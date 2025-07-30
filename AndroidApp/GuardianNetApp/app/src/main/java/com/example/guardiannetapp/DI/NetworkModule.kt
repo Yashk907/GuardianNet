@@ -22,7 +22,7 @@ object NetworkModule {
     fun provideRetrofit() : Retrofit{
         return Retrofit.Builder()
 //            .baseUrl("https://guardiannet-production.up.railway.app/")
-            .baseUrl("http://10.54.88.9:8000/")
+            .baseUrl("http://10.136.192.9:8000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

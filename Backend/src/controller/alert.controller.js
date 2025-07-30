@@ -27,7 +27,7 @@ const alertEscalated = asyncHandler(async (req, res) => {
   // create alert model
   const alert = await Alert.create({
     patientId: patient._id,
-    triggeredType: "BREACH",
+    triggeredType: "Breach",
     location: {
       type: "Point",
       coordinates
@@ -58,4 +58,33 @@ const alertEscalated = asyncHandler(async (req, res) => {
   );
 });
 
+const backToSafeZone = asyncHandler(async(req,res)=>{
+  //take patientId from user
+  //find patient 
+  //make status of patient to safe 
+  //make alert resolved
+  const {userId} = req.body
+  const patient = await Patient.findOne({userId})
+
+  if(!patient){
+    throw new ApiError(400,"Patient Not exist")
+  }
+
+  patient.status = "Safe"
+
+  await patient.save()
+
+  // const alert = await Alert.findById(alertId)
+
+  // if(!alert){
+  //   ApiError(400,"Alert Not found")
+  // }
+  return res.status(200).json(
+    ApiResponse("User Is Located in Safe Zone successfully")
+  )
+
+
+})
+
 export { alertEscalated };
+export { backToSafeZone }

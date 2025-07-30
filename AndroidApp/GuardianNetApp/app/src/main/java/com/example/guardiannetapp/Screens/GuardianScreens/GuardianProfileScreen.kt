@@ -3,6 +3,8 @@ package com.example.guardiannetapp.Screens.GuardianScreens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -39,6 +43,7 @@ import com.example.guardiannetapp.ui.theme.Poppins
 @Composable
 fun GuardianProfileScreen() {
     val bgColor = Color(0xFFF5F7FA)
+    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,7 +54,8 @@ fun GuardianProfileScreen() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(24.dp)
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
@@ -72,13 +78,13 @@ fun GuardianProfileScreen() {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                ProfileTextField("Name", "Rohan Nalawade")
+                ProfileTextField("Name", "Yash Karande")
                 ProfileTextField(
                     "Address",
                     "House No. 17, Raghunandan Nagar,\nNear Sinhagad College, Vadgaon Budruk,\nPune - 411041, Maharashtra"
                 )
-                ProfileTextField("Email", "rohannalawade@gmail.com")
-                ProfileTextField("Contact", "8975785013")
+                ProfileTextField("Email", "yash@gmail.com")
+                ProfileTextField("Contact", "9822508423")
             }
 
             Spacer(modifier = Modifier.weight(1f))
