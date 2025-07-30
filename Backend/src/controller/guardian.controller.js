@@ -79,7 +79,7 @@ const setSafeLocation = asyncHandler(async (req, res) => {
   }
 
   // 1. Find guardian
-  const guardian = await Guardian.findOne({ userId });
+  const guardian = await Guardian.findOne({userId});
   if (!guardian) {
     throw new ApiError(400, "Guardian not found");
   }

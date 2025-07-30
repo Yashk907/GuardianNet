@@ -33,4 +33,27 @@ class GuardianSidePatientDetailsVM @Inject constructor(private val repo: Repo) :
             }
         }
     }
+
+    fun setSafeZone(
+        userId: String,
+        patientId: String,
+        coordinates: List<Double>,
+        radius: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        isLoading.value = true
+        viewModelScope.launch {
+            val response = repo.setSafeZone(userId, patientId, coordinates, radius)
+            response.onSuccess {
+                // Optionally update local patient data
+                onSuccess()
+                isLoading.value = false
+            }
+            response.onFailure { error ->
+                onError(error.message.toString())
+                isLoading.value = false
+            }
+        }
+    }
 }

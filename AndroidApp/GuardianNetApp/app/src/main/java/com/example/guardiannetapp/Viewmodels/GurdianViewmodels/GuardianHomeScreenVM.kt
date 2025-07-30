@@ -24,24 +24,30 @@ class GuardianHomeScreenVM @Inject constructor(private val authRepo: Repo,
 
 
     val isLoading = MutableStateFlow(false)
-
-    fun fetchGuardian(userId : String, onError : (String)-> Unit){
+    fun fetchGuardian(
+        userId: String,
+        onError: (String) -> Unit,
+        onSuccess: (String) -> Unit
+    ) {
         isLoading.value = true
         viewModelScope.launch {
-            val result= authRepo.fetchGuardian(userId)
-            result.onSuccess {
-                response->
+            val result = authRepo.fetchGuardian(userId)
+            result.onSuccess { response ->
                 _guardian.value = response.data
                 isLoading.value = false
-                Log.d("guardian",response.data.toString())
+                Log.d("guardian", response.data.toString())
 
+                // Save in SharedPreferences
                 sharedPreferences.edit().apply {
                     putString("guardianUserId", userId)
                     apply()
                 }
+
+                // Notify UI with guardianId
+                onSuccess(userId)
             }
             result.onFailure {
-                Log.d("error",it.message.toString())
+                Log.d("error", it.message.toString())
                 onError(it.message.toString())
                 isLoading.value = false
             }

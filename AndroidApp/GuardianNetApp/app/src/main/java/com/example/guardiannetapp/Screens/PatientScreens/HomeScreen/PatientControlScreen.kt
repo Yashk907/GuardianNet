@@ -50,6 +50,7 @@ import com.example.guardiannetapp.R
 import com.example.guardiannetapp.Screens.GuardianScreens.GuardianBottomNavItem
 import com.example.guardiannetapp.Screens.GuardianScreens.GuardianBottomNavigation
 import com.example.guardiannetapp.Screens.GuardianScreens.GuardianTopBar
+import com.example.guardiannetapp.Screens.PatientScreens.Profile.PatientProfileScreen
 import com.example.guardiannetapp.ui.theme.Poppins
 
 data class GuardianBottomNavItem(
@@ -89,7 +90,7 @@ fun PatientSideControlScreen(
         ) {
             when(selectTab.value){
                 "home" -> PatientHomeScreen(userId, hiltViewModel())
-                "profile" -> Text("Profile Screen", modifier = Modifier.align(Alignment.Center))
+                "profile" -> PatientProfileScreen()
             }
         }
 

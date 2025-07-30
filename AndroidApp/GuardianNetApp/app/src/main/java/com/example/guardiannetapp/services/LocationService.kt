@@ -34,7 +34,7 @@ class LocationService : Service() {
 
         // Initialize Socket.IO
         try {
-            socket = IO.socket("https://guardiannet-production.up.railway.app")
+            socket = IO.socket("http://10.54.88.9:8000")
         } catch (e: Exception) {
             Log.e("SocketIO", "Error: ${e.message}")
         }
@@ -118,7 +118,7 @@ class LocationService : Service() {
     @SuppressLint("ForegroundServiceType")
     private fun startForegroundServiceNotification() {
         val channelId = "location_service_channel"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
                 "Location Service",

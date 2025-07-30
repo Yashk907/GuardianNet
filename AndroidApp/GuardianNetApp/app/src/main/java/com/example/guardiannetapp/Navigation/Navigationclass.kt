@@ -52,10 +52,12 @@ fun Navigation(navHostController: NavHostController,
             GuardiansideControlScreen(userId.toString(),navHostController)
         }
 
-        composable(route = "${Screen.PATIENTDETAILSCREEN.name}/{patientId}") {
+        composable(route = "${Screen.PATIENTDETAILSCREEN.name}/{patientId}/{userId}") {
             backstackEntry ->
             val patientId = backstackEntry.arguments?.getString("patientId")
-            GuardianSidePatientDetailsScreen(hiltViewModel(),patientId.toString())
+            val userId = backstackEntry.arguments?.getString("userId")
+            GuardianSidePatientDetailsScreen(hiltViewModel(),patientId.toString(),userId.toString(),
+                onBackClick = {navHostController.popBackStack()})
     }
 
         //patient
@@ -80,7 +82,9 @@ enum class Screen{
     //Gurdian
     GUARDIANCONTROLSCREEN,
     PATIENTDETAILSCREEN,
+    GUARDIANPROFILESCREEN,
 
     //patients
     PATIENTCONTROLSCREEN,
+    PATIENTPROFILESCREEN
 }

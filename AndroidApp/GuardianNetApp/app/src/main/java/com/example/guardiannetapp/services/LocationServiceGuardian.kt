@@ -10,16 +10,17 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.guardiannetapp.R
+import io.socket.client.IO
+import io.socket.client.Socket
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import org.json.JSONObject
-
 class GuardianLocationListenerService : Service() {
 
-    private lateinit var webSocket: WebSocket
-    private var guardianUserId: String = "" // get from SharedPreferences
+    private lateinit var socket: Socket
+    private var guardianUserId: String = ""
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         guardianUserId = getSharedPreferences("SafeZonePrefs", MODE_PRIVATE)
@@ -28,52 +29,45 @@ class GuardianLocationListenerService : Service() {
         Log.d("GuardianWS", "GuardianUserId: $guardianUserId")
 
         startForegroundNotification()
-        initWebSocket()
+        initSocket()
 
         return START_STICKY
     }
 
-    /** Connect to WebSocket **/
-    private fun initWebSocket() {
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url("wss://guardiannet-production.up.railway.app") // your backend url
-            .build()
+    private fun initSocket() {
+        try {
+            socket = IO.socket("http://10.54.88.9:8000")
+        } catch (e: Exception) {
+            Log.e("GuardianWS", "Error: ${e.message}")
+            return
+        }
 
-        webSocket = client.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(ws: WebSocket, response: okhttp3.Response) {
-                Log.d("GuardianWS", "Connected to server")
-                // Register as Guardian
-                val registerJson = """{"role":"Guardian","userId":"$guardianUserId"}"""
-                ws.send(registerJson)
-            }
+        socket.connect()
 
-            override fun onMessage(ws: WebSocket, text: String) {
-                Log.d("GuardianWS", "Message from server: $text")
-                try {
-                    val json = JSONObject(text)
-                    if (json.has("userId") && json.has("lat") && json.has("lng")) {
-                        val patientId = json.getString("userId")
-                        val lat = json.getDouble("lat")
-                        val lng = json.getDouble("lng")
-                        showPatientLocationNotification(patientId, lat, lng)
-                    }
-                } catch (e: Exception) {
-                    Log.e("GuardianWS", "Invalid message format: $text")
-                }
-            }
+        // When connected, register guardian
+        socket.on(Socket.EVENT_CONNECT) {
+            Log.d("GuardianWS", "Connected to server")
+            val json = JSONObject()
+            json.put("role", "Guardian")
+            json.put("userId", guardianUserId)
+            socket.emit("register", json)
+        }
 
-            override fun onFailure(ws: WebSocket, t: Throwable, response: okhttp3.Response?) {
-                Log.e("GuardianWS", "WebSocket Error: ${t.message}")
-            }
+        // Listen for patient location updates
+        socket.on("patientLocation") { args ->
+            val data = args[0] as JSONObject
+            val patientId = data.getString("userId")
+            val lat = data.getDouble("lat")
+            val lng = data.getDouble("lng")
+            Log.d("GuardianWS", "Patient location: $lat,$lng")
+            showPatientLocationNotification(patientId, lat, lng)
+        }
 
-            override fun onClosed(ws: WebSocket, code: Int, reason: String) {
-                Log.d("GuardianWS", "Closed: $reason")
-            }
-        })
+        socket.on(Socket.EVENT_DISCONNECT) {
+            Log.d("GuardianWS", "Disconnected from server")
+        }
     }
 
-    /** Foreground Notification **/
     @SuppressLint("ForegroundServiceType")
     private fun startForegroundNotification() {
         val channelId = "guardian_listener_channel"
@@ -93,7 +87,6 @@ class GuardianLocationListenerService : Service() {
         startForeground(3, notification)
     }
 
-    /** Show Patient Location Alert **/
     private fun showPatientLocationNotification(patientId: String, lat: Double, lng: Double) {
         val channelId = "patient_location_alert"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -110,15 +103,14 @@ class GuardianLocationListenerService : Service() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
 
-        getSystemService(NotificationManager::class.java).notify(patientId.hashCode(), notification)
+        getSystemService(NotificationManager::class.java)
+            .notify(patientId.hashCode(), notification)
     }
-
-    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         super.onDestroy()
-        if (::webSocket.isInitialized) {
-            webSocket.close(1000, "Service stopped")
-        }
+        socket.disconnect()
     }
+
+    override fun onBind(intent: Intent?): IBinder? = null
 }

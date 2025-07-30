@@ -3,6 +3,7 @@ package com.example.guardiannetapp.Repo
 import com.example.guardiannetapp.API.AuthApi
 import com.example.guardiannetapp.API.GuardianRequest
 import com.example.guardiannetapp.API.PatientRequest
+import com.example.guardiannetapp.API.SetSafeZoneRequest
 import com.example.guardiannetapp.API.connectionRequest
 import com.example.guardiannetapp.Models.Guardian
 import com.example.guardiannetapp.Models.Patient
@@ -57,5 +58,21 @@ class Repo @Inject constructor(private val authApi : AuthApi) {
             Result.failure(e)
         }
     }
+
+    suspend fun setSafeZone(
+        userId: String,
+        patientId: String,
+        coordinates: List<Double>,
+        radius: Int
+    ): Result<ApiResponse<Guardian>> {
+        return try {
+            val request = SetSafeZoneRequest(userId, patientId, coordinates, radius)
+            val response = authApi.setSafeZone(request)
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 
 }

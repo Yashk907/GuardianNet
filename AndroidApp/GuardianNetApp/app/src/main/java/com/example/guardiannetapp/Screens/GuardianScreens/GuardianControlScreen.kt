@@ -78,13 +78,11 @@ fun GuardiansideControlScreen(
             when (selectTab.value) {
                 "home" -> GuardianHomeScreen(userId,hiltViewModel(),
                     onPatientClick = {
-                        navController.navigate("${Screen.PATIENTDETAILSCREEN.name}/${it.userId}")
+                        navController.navigate("${Screen.PATIENTDETAILSCREEN.name}/${it.userId}/${userId}")
                     },
                     modifier = Modifier.padding(paddingValues))
                 "add_patient" -> AddPatientScreen(hiltViewModel(),userId, modifier = Modifier.padding(paddingValues))
-                "profile" -> {
-                    Text("Profile Screen", modifier = Modifier.align(Alignment.Center))
-                }
+                "profile" -> GuardianProfileScreen()
 
             }
         }

@@ -57,30 +57,31 @@ fun GuardianHomeScreen(
     val context = LocalContext.current
 
 
+
     LaunchedEffect(Unit) {
         Log.d("userId", userId)
 
-        // Fetch Guardian first
-        viewModel.fetchGuardian(userId) {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            Log.d("guardian", it.toString())
-        }
+        // Fetch Guardian and handle success
+        viewModel.fetchGuardian(
+            userId = userId,
+            onError = {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                Log.d("guardian", it.toString())
+            },
+            onSuccess = { guardianId ->
+                // Save guardianId to SharedPreferences
+                context.getSharedPreferences("SafeZonePrefs", Context.MODE_PRIVATE)
+                    .edit {
+                        putString("guardianUserId", guardianId)
+                    }
 
+                // Start foreground service
+                val intent = Intent(context, GuardianLocationListenerService::class.java)
+                ContextCompat.startForegroundService(context, intent)
+            }
+        )
     }
-    LaunchedEffect(viewModel.guardian.collectAsState().value.userId) {
-        val guardianId = viewModel.guardian.value.userId
-        if (guardianId.isNotEmpty()) {
-            // Save to SharedPreferences
-            context.getSharedPreferences("SafeZonePrefs", Context.MODE_PRIVATE)
-                .edit {
-                    putString("guardianUserId", guardianId)
-                }
 
-            // Start the service
-            val intent = Intent(context, GuardianLocationListenerService::class.java)
-            ContextCompat.startForegroundService(context, intent)
-        }
-    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),

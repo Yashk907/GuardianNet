@@ -52,6 +52,8 @@ io.on("connection", (socket) => {
       console.log("Patient does not exist");
       return;
     }
+    patient.status = "Breached"
+    await patient.save()
 
     // Find primary guardian
     const primaryGuardian = patient.guardians.find((g) => g.isPrimary === true);

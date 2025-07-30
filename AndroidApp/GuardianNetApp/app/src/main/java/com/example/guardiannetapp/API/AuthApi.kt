@@ -27,6 +27,9 @@ interface AuthApi {
 
     @POST("api/v1/patients/getPatientData")
     suspend fun fetchPatient(@Body patientRequest: PatientRequest) : ApiResponse<Patient>
+
+    @POST("api/v1/guardians/setSafeZone")
+    suspend fun setSafeZone(@Body setSafeZoneRequest: SetSafeZoneRequest) : ApiResponse<Guardian>
 }
 
 data class GuardianRequest(
@@ -35,6 +38,13 @@ data class GuardianRequest(
 
 data class PatientRequest(
     val userId: String
+)
+
+data class SetSafeZoneRequest(
+    val userId: String,
+    val patientId: String,
+    val coordinates: List<Double>,  // [lng, lat]
+    val radius: Int
 )
 
 data class connectionRequest(

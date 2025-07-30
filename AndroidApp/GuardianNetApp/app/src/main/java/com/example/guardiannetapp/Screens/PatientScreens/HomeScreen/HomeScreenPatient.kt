@@ -79,9 +79,8 @@ enum class SafeZoneStatus(val displayName: String, val color: Color) {
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PatientHomeScreen(
-    userId : String,
-    viewModel : PatientHomeScreenVM ,
-    uiState: PatientHomeUiState = PatientHomeUiState(),
+    userId: String,
+    viewModel: PatientHomeScreenVM,
     onHelpClick: () -> Unit = {},
     onTakeMeHomeClick: () -> Unit = {},
     onCodeCopy: () -> Unit = {},
@@ -125,8 +124,8 @@ fun PatientHomeScreen(
                     onError = {
                         Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                     }
-                ) { patientData ->   // now success callback works
-                    Log.d("patientDat",patientData.toString())
+                ) { patientData ->
+                    Log.d("patientDat", patientData.toString())
                     val lat = patientData.safeZoneCenter.coordinates[0]
                     val lng = patientData.safeZoneCenter.coordinates[1]
                     val radius = patientData.safeZoneRadius
@@ -139,15 +138,13 @@ fun PatientHomeScreen(
                     ContextCompat.startForegroundService(context, intent)
                 }
             }
-
-
         }
     }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
-            LatLng(18.4575, 73.8500), // Example: VIIT Pune
-            15f // Zoom level
+            LatLng(18.4575, 73.8500),
+            15f
         )
     }
     val scrollState = rememberScrollState()
@@ -159,68 +156,65 @@ fun PatientHomeScreen(
         animationSpec = tween(600)
     )
 
-
-
-
-
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFF8F9FA),
-                        Color(0xFFE9ECEF)
-                    )
+                    colors = listOf(Color(0xFFF8F9FA), Color(0xFFE9ECEF))
                 )
             )
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(20.dp)
+        ) {
+            // Status Header Card
+            StatusHeaderCard(
+                userName = patient.value?.userName ?: "Unknown",
+                userPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
+                userCode = patient.value?.linkCode ?: "XXXXXXX",
+                safeZoneStatus = if (patient.value?.status == "SAFE")
+                    SafeZoneStatus.SAFE else SafeZoneStatus.BREACH,
+                onCodeCopy = onCodeCopy,
+                modifier = Modifier.scale(cardScale)
+            )
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(20.dp)
-            ) {
-                // Status Header Card
-                StatusHeaderCard(
-                    uiState = uiState,
-                    onCodeCopy = onCodeCopy,
-                    modifier = Modifier.scale(cardScale)
-                )
+            Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
+            // Quick Stats Row
+            QuickStatsRow(
+                safeZoneStatus = if (patient.value?.status == "SAFE")
+                    SafeZoneStatus.SAFE else SafeZoneStatus.BREACH,
+                connectedGuardians = patient.value?.guardians?.size ?: 0,
+                batteryLevel = 85
+            )
 
-                // Quick Stats Row
-                QuickStatsRow(
-                    safeZoneStatus = uiState.safeZoneStatus,
-                    connectedGuardians = uiState.connectedGuardians,
-                    batteryLevel = uiState.batteryLevel
-                )
+            Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
+            // Action Buttons
+            ActionButtonsSection(
+                onHelpClick = onHelpClick,
+                onTakeMeHomeClick = onTakeMeHomeClick,
+                safeZoneStatus = if (patient.value?.status== "SAFE")
+                    SafeZoneStatus.SAFE else SafeZoneStatus.BREACH
+            )
 
-                // Action Buttons
-                ActionButtonsSection(
-                    onHelpClick = onHelpClick,
-                    onTakeMeHomeClick = onTakeMeHomeClick,
-                    safeZoneStatus = uiState.safeZoneStatus
-                )
+            Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
+            // Location Card with Map
+//            LocationMapCard(
+//                cameraPositionState = cameraPositionState,
+//                currentLocationName = patient.value?.currentLocationName ?: "Not Available"
+//            )
 
-                // Location Card with Map
-                LocationMapCard(
-                    cameraPositionState = cameraPositionState,
-                    currentLocationName = uiState.currentLocationName
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-
+            Spacer(modifier = Modifier.height(20.dp))
+        }
 
         // Loading overlay
-        if (uiState.isLoading) {
+        if (viewModel.isLoading.collectAsState().value) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -235,7 +229,10 @@ fun PatientHomeScreen(
 
 @Composable
 private fun StatusHeaderCard(
-    uiState: PatientHomeUiState,
+    userName: String,
+    userPhotoUrl: String,
+    userCode: String,
+    safeZoneStatus: SafeZoneStatus,
     onCodeCopy: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -252,10 +249,10 @@ private fun StatusHeaderCard(
                 .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Profile Image with Status Ring
+            // Profile Image
             Box {
                 Image(
-                    painter = rememberAsyncImagePainter(uiState.userPhotoUrl),
+                    painter = rememberAsyncImagePainter(userPhotoUrl),
                     contentDescription = "Profile Picture",
                     modifier = Modifier
                         .size(64.dp)
@@ -268,7 +265,7 @@ private fun StatusHeaderCard(
                 Box(
                     modifier = Modifier
                         .size(20.dp)
-                        .background(uiState.safeZoneStatus.color, CircleShape)
+                        .background(safeZoneStatus.color, CircleShape)
                         .align(Alignment.BottomEnd),
                     contentAlignment = Alignment.Center
                 ) {
@@ -291,7 +288,7 @@ private fun StatusHeaderCard(
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = uiState.userName,
+                    text = userName,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF0A2540)
@@ -310,7 +307,7 @@ private fun StatusHeaderCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "ID: ${uiState.userCode}",
+                            text = "ID: $userCode",
                             fontSize = 13.sp,
                             color = Color(0xFF0A2540),
                             fontWeight = FontWeight.SemiBold
